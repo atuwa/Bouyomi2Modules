@@ -8,16 +8,15 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-import bouyomi.DiscordAPI;
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.DiscordBOT.NamedFileObject;
 import bouyomi.IModule;
 import bouyomi.Tag;
-import bouyomi.TubeAPI;
-import bouyomi.TubeAPI.PlayVideoEvent;
-import bouyomi.TubeAPI.PlayVideoTitleEvent;
 import bouyomi.Util;
+import module.TubeAPI.PlayVideoEvent;
+import module.TubeAPI.PlayVideoTitleEvent;
 
 public class Sample implements IModule{
 
@@ -26,17 +25,17 @@ public class Sample implements IModule{
 		if(tag.con.mentions.contains("581268794794573870")) {//メンションリストに539105406107254804が含まれる場合
 			if(tag.con.text.contains("サンプルモジュール")) {//「サンプルモジュール」と言うメッセージを含む場合
 				String m=Util.IDtoMention(tag.con.userid);//この書き込みをしたユーザIDからメンションを生成
-				DiscordAPI.chatDefaultHost(tag,m+"サンプルモジュール");//メンションとテキストを連結して投稿
+				tag.chatDefaultHost(m+"サンプルモジュール");//メンションとテキストを連結して投稿
 			}
 		}
 		String s=tag.getTag("サンプルモジュール");//タグ取得
 		if(s!=null) {//タグが無い時はnull
 			String m=Util.IDtoMention(tag.con.userid);//この書き込みをしたユーザIDからメンションを生成
-			DiscordAPI.chatDefaultHost(tag,m+s.length());//メンションとタグの内容を連結して投稿
+			tag.chatDefaultHost(m+s.length());//メンションとタグの内容を連結して投稿
 		}
 		if(tag.con.mentions.contains("581268794794573870")) {
 			if(tag.con.text.equals("働け")||tag.con.text.equals("仕事しろ")) {
-				DiscordAPI.chatDefaultHost(tag,"やだ");
+				tag.chatDefaultHost("やだ");
 			}
 		}
 		String seedS=tag.getTag("ランダム文字列");
@@ -62,7 +61,7 @@ public class Sample implements IModule{
 			for(int i=0;i<len;i++) {
 				sb.append((char)r.nextInt(65514));
 			}
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 		String org=tag.getTag("文字化け");
 		if(org!=null) {
@@ -75,7 +74,7 @@ public class Sample implements IModule{
 				result=new String(b,"euc-jp");
 				sb.append(result);
 				sb.append("```");
-				DiscordAPI.chatDefaultHost(tag,sb.toString());
+				tag.chatDefaultHost(sb.toString());
 			}catch(UnsupportedEncodingException e){
 				e.printStackTrace();
 			}
@@ -90,7 +89,7 @@ public class Sample implements IModule{
 				if(hex.length()<2)sb.append("0");
 				sb.append(hex);
 			}
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 		org=tag.getTag("16進数D");
 		if(org!=null) {
@@ -107,29 +106,38 @@ public class Sample implements IModule{
 				}
 			}
 			String d=new String(ba,StandardCharsets.UTF_8);
-			DiscordAPI.chatDefaultHost(tag,Util.IDtoMention(tag.con.userid)+"\n"+d);
+			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"\n"+d);
 		}
-		org=tag.getTag("サーバーアイコン取得");
+		org=tag.getTag("サーバーアイコン取得","サーバアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			icon(bc,bc.server.getIconUrl());
 		}
-		org=tag.getTag("サーバーアイコンURL","サーバーアイコンurl");
+		org=tag.getTag("サーバーアイコンURL","サーバーアイコンurl",
+				"サーバアイコンURL","サーバアイコンurl");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			DiscordBOT.DefaultHost.send(bc,bc.server.getIconUrl());
 		}
-		org=tag.getTag("ユーザーアイコン取得");
+		org=tag.getTag("ユーザーアイコン取得","ユーザアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+			if(org.isEmpty())org=bc.userid;
 			String url=bc.server.getMemberById(org).getUser().getEffectiveAvatarUrl();
 			icon(bc,url);
 		}
-		org=tag.getTag("ユーザーアイコンURL","ユーザーアイコンurl");
+		org=tag.getTag("ユーザーアイコンURL","ユーザーアイコンurl",
+				"ユーザアイコンURL","ユーザアイコンurl");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+			if(org.isEmpty())org=bc.userid;
 			String url=bc.server.getMemberById(org).getUser().getEffectiveAvatarUrl();
 			DiscordBOT.DefaultHost.send(bc,url);
+		}
+		org=tag.getTag("メッセージ削除");
+		if(org!=null&&tag.con instanceof BouyomiBOTConection&&tag.isAdmin()) {
+			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+			DiscordBOT.DefaultHost.getTextChannel(bc.textChannel.getId()).deleteMessageById(org).queue();
 		}
 	}
 	private void icon(BouyomiBOTConection bc,String url) {

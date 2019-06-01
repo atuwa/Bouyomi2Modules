@@ -1,8 +1,6 @@
 package module;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,8 +9,8 @@ import java.util.Map.Entry;
 import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
 import bouyomi.Counter;
-import bouyomi.DiscordAPI;
 import bouyomi.DiscordBOT;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -38,8 +36,8 @@ public class Alarm implements IModule,IAutoSave{
 		String s=tag.getTag("アラーム取り消し","アラーム取消","アラーム取り消","アラーム取消し");
 		if(s!=null) {
 			String v=map.remove(makeKey(tag));
-			if(v==null)DiscordAPI.chatDefaultHost(tag, tag.con.user+"のアラームは設定されていません");
-			else DiscordAPI.chatDefaultHost(tag,tag.con.user+"のアラームを取り消しました");
+			if(v==null)tag.chatDefaultHost(tag.con.user+"のアラームは設定されていません");
+			else tag.chatDefaultHost(tag.con.user+"のアラームを取り消しました");
 		}
 		s=tag.getTag("アラーム取得");
 		if(s!=null) {
@@ -63,7 +61,7 @@ public class Alarm implements IModule,IAutoSave{
 				sb.append(s0);
 			}
 			if(map.isEmpty())sb.append("無し");
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 	}
 	private String makeKey(Tag tag){
@@ -75,11 +73,11 @@ public class Alarm implements IModule,IAutoSave{
 		else if(con.con.userid.equals(id));
 		else name=Counter.getUserName(id);
 		String v=map.get(makeKey(con));
-		if(v==null)DiscordAPI.chatDefaultHost(con,"/"+name+"のアラームは設定されていません");
+		if(v==null)con.chatDefaultHost("/"+name+"のアラームは設定されていません");
 		else{
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日HH時mm分");
 			String l=sdf.format(new Date(Long.parseLong(v)));
-			DiscordAPI.chatDefaultHost(con,"/"+name+"のアラームは"+l+"に設定されています");
+			con.chatDefaultHost("/"+name+"のアラームは"+l+"に設定されています");
 		}
 	}
 	private void main(String s, Tag tag) {
@@ -105,21 +103,14 @@ public class Alarm implements IModule,IAutoSave{
 			Date date = sdf.parse(sdf0.format(new Date(nd))+h+m);
 			//date.getTime(),sdf.format(date), con.userid
 			System.out.println("時間指定は正常に処理されました\n結果="+sdf.format(date));
-			DiscordAPI.chatDefaultHost(tag.con,"/"+sdf.format(date)+"にメンションします");
+			tag.chatDefaultHost("/"+sdf.format(date)+"にメンションします");
 			map.put(makeKey(tag),Long.toString(date.getTime()));
 			call();
 			savedmap=false;
 		}catch(Exception e){
 			e.printStackTrace();
-			chatException(e,tag.con);
+			Util.chatException(tag,null,e);
 		}
-	}
-	private boolean chatException(Exception e, BouyomiConection con) {
-		StringWriter sw=new StringWriter();
-		PrintWriter pw=new PrintWriter(sw);
-		e.printStackTrace(pw);
-		pw.close();
-		return DiscordAPI.chatDefaultHost(con,sw.toString());
 	}
 	private class AlarmThread2 extends Thread{
 		private long sleep;

@@ -11,7 +11,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 
 import bouyomi.BouyomiProxy;
-import bouyomi.DiscordAPI;
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
 import bouyomi.DiscordBOT.NamedFileObject;
@@ -32,7 +31,7 @@ public class お題抽選システム implements IModule{
 			if(text.length()>index) {
 				text=text.substring(index+1).trim();
 				お題リストに書き出し(text,bc);
-				DiscordAPI.chatDefaultHost(tag.con,"お題候補に「"+text+"」を追加");
+				tag.chatDefaultHost("お題候補に「"+text+"」を追加");
 			}
 		}
 		String ts=tag.getTag("お題リストから削除");
@@ -43,11 +42,11 @@ public class お題抽選システム implements IModule{
 					BouyomiProxy.load(list,makeFilePath(bc));
 					if(list.remove(ts)) {
 						BouyomiProxy.save(list,makeFilePath(bc));
-						DiscordAPI.chatDefaultHost(tag.con,"削除成功");
-					}else DiscordAPI.chatDefaultHost(tag.con,"削除失敗(存在しません)");
+						tag.chatDefaultHost("削除成功");
+					}else tag.chatDefaultHost("削除失敗(存在しません)");
 				}catch(IOException e){
 					e.printStackTrace();
-					DiscordAPI.chatDefaultHost(tag.con,"削除失敗(ファイル操作失敗)");
+					tag.chatDefaultHost("削除失敗(ファイル操作失敗)");
 				}
 			}
 		}
@@ -55,7 +54,7 @@ public class お題抽選システム implements IModule{
 		if(ts!=null) {
 			File f=new File(makeFilePath(bc));
 			if(f.isFile()&&f.length()>0) {
-				DiscordAPI.chatDefaultHost(tag.con,"既にお題が1件もありません");
+				tag.chatDefaultHost("既にお題が1件もありません");
 			}else try {
 				NamedFileObject fo=new NamedFileObject(new FileInputStream(f),"odai.txt");
 				DiscordBOT.DefaultHost.send("残っていたお題リスト",bc.server,bc.textChannel,fo);
@@ -79,19 +78,19 @@ public class お題抽選システム implements IModule{
 			try{
 				ArrayList<String> list=new ArrayList<String>();
 				BouyomiProxy.load(list,makeFilePath(bc));
-				if(list.isEmpty())DiscordAPI.chatDefaultHost(tag.con,"お題が1件もありません");
+				if(list.isEmpty())tag.chatDefaultHost("お題が1件もありません");
 				else {
 					SecureRandom rand=new SecureRandom();
 					int index=rand.nextInt(list.size());
 					ts=list.get(index);
 					if(list.remove(index)!=null) {
 						BouyomiProxy.save(list,makeFilePath(bc));
-						DiscordAPI.chatDefaultHost(tag.con,"抽選結果："+ts);
-					}else DiscordAPI.chatDefaultHost(tag.con,"削除失敗(存在しません)");
+						tag.chatDefaultHost("抽選結果："+ts);
+					}else tag.chatDefaultHost("削除失敗(存在しません)");
 				}
 			}catch(IOException e){
 				e.printStackTrace();
-				DiscordAPI.chatDefaultHost(tag.con,"抽選失敗(ファイル操作失敗)");
+				tag.chatDefaultHost("抽選失敗(ファイル操作失敗)");
 			}
 		}
 	}

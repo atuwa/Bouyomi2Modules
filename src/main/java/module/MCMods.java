@@ -1,6 +1,5 @@
 package module;
 
-import bouyomi.DiscordAPI;
 import bouyomi.IModule;
 import bouyomi.Tag;
 
@@ -10,7 +9,7 @@ public class MCMods implements IModule{
 	public void call(Tag tag){
 		String t=tag.getTag("モジュールテスト");
 		if(t!=null) {
-			DiscordAPI.chatDefaultHost(tag,t);
+			tag.chatDefaultHost(t);
 		}
 	}
 

@@ -10,7 +10,6 @@ import java.util.Random;
 import bouyomi.BouyomiProxy;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -138,12 +137,12 @@ public class Rundom implements IModule,IDailyUpdate,IAutoSave{
 			}
 			p=tag.getTag("今日の"+e.name);
 			if(p!=null) {
-				DiscordAPI.chatDefaultHost(tag,e.get());
+				tag.chatDefaultHost(e.get());
 			}
 			p=tag.getTag("今日の"+e.name+"変更");
 			if(p!=null) {
 				e.update();
-				DiscordAPI.chatDefaultHost(tag,e.get());
+				tag.chatDefaultHost(e.get());
 			}
 		}
 	}

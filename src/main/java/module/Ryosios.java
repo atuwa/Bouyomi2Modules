@@ -2,7 +2,6 @@ package module;
 
 import java.util.Random;
 
-import bouyomi.DiscordAPI;
 import bouyomi.IModule;
 import bouyomi.Tag;
 
@@ -14,7 +13,7 @@ public class Ryosios implements IModule{
 		if(tag.con.text.equals("おっさん生きてる？")||tag.con.text.equals("おっさん死んでる？")) {
 			String lives=NicoAlart.alarted.get("1003067");
 			if(lives!=null&&!lives.isEmpty()) {
-				DiscordAPI.chatDefaultHost(tag,"生きてる。良かった");
+				tag.chatDefaultHost("生きてる。良かった");
 				return;
 			}
 			Random r=new Random();
@@ -25,10 +24,10 @@ public class Ryosios implements IModule{
 					"ギャザやってる",
 					"ガリ喰ってる"};
 			if(r.nextInt(100)<5) {
-				DiscordAPI.chatDefaultHost(tag,"トイレ行ってる");
+				tag.chatDefaultHost("トイレ行ってる");
 			}else {
 				int i=r.nextInt(list.length);
-				DiscordAPI.chatDefaultHost(tag,list[i]);
+				tag.chatDefaultHost(list[i]);
 			}
 		}
 	}

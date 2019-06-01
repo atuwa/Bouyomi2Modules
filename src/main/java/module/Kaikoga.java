@@ -15,7 +15,6 @@ import bouyomi.BouyomiProxy;
 import bouyomi.Counter;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.ListMap;
@@ -96,7 +95,7 @@ public class Kaikoga implements IModule,IAutoSave{
 		if(str!=null){
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
-				DiscordAPI.chatDefaultHost(tag,"了解。"+Counter.getUserName(str)+"の要求としてボロンさせます");
+				tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"の要求としてボロンさせます");
 				hit(con,str);
 			}else con.addTask.add("権限がありません");
 		}
@@ -105,8 +104,8 @@ public class Kaikoga implements IModule,IAutoSave{
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
 				String old=kaikogaDB.remove(str);
-				if(old!=null) DiscordAPI.chatDefaultHost(tag,"了解。"+Counter.getUserName(str)+"のボロンを抹消します");
-				else DiscordAPI.chatDefaultHost(tag,Counter.getUserName(str)+"のボロンを抹消出来ませんでした");
+				if(old!=null) tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを抹消します");
+				else tag.chatDefaultHost(Counter.getUserName(str)+"のボロンを抹消出来ませんでした");
 			}else con.addTask.add("権限がありません");
 		}
 		str=tag.getTag("ボロン減算");
@@ -124,10 +123,10 @@ public class Kaikoga implements IModule,IAutoSave{
 				}
 				if("0".equals(n)){
 					kaikogaDB.remove(str);
-					DiscordAPI.chatDefaultHost(tag,"了解。"+Counter.getUserName(str)+"のボロンを抹消します");
+					tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを抹消します");
 				}else{
 					kaikogaDB.put(str,n);
-					DiscordAPI.chatDefaultHost(tag,"了解。"+Counter.getUserName(str)+"のボロンを"+n+"にさせます");
+					tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを"+n+"にさせます");
 				}
 			}else con.addTask.add("権限がありません");
 		}
@@ -136,27 +135,27 @@ public class Kaikoga implements IModule,IAutoSave{
 			if(tag.isAdmin()) {
 				IDailyUpdate u=DailyUpdate.updater.target.get("KaikogaKakuritu");
 				if(u!=null)u.update();
-			}else DiscordAPI.chatDefaultHost(tag,"権限がありません");
+			}else tag.chatDefaultHost("権限がありません");
 		}
 		str=tag.getTag("ボロン率");
 		if(str!=null) {
 			if(str.isEmpty()) {
 				String s="現在のボロン率は"+(kakuritu/10F)+"%です";
-				DiscordAPI.chatDefaultHost(tag,s);
+				tag.chatDefaultHost(s);
 			}else if(tag.isAdmin()) {
 				try{
 					kakuritu=(int)(Float.parseFloat(str)*10);
 					String s="カイコガボロン率を"+(kakuritu/10F)+"%に変更しました";
-					DiscordAPI.chatDefaultHost(tag,s);
+					tag.chatDefaultHost(s);
 				}catch(NumberFormatException nfe) {
 
 				}
-			}else DiscordAPI.chatDefaultHost(tag,"権限がありません");
+			}else tag.chatDefaultHost("権限がありません");
 		}
 		if(con.text.contains("今素振り何回")||con.text.contains("今素振り何回?")) {
 			StringBuilder sb=new StringBuilder(up+"回/*確率");
 			kakuritu(sb);
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 		if(con.text.equals("グレートカイコガ２")||con.text.equals("グレートカイコガ2")
 				||con.text.equals("グレートカイコガ")||con.text.equals("greatKaikoga")||con.text.equals("GreatKaikoga")){
@@ -176,11 +175,11 @@ public class Kaikoga implements IModule,IAutoSave{
 			sb.append(" ").append(up).append("回の素振り");
 			up=0;
 			if(!con.mute) {
-				DiscordAPI.chatDefaultHost(tag,sb.toString());
+				tag.chatDefaultHost(sb.toString());
 				if(r==1) {
-					DiscordAPI.chatDefaultHost(tag,"おおおおおおおおおおおおおお燃えたあああああああああああああああああああ/*\n"
+					tag.chatDefaultHost("おおおおおおおおおおおおおお燃えたあああああああああああああああああああ/*\n"
 			+ "https://cdn.discordapp.com/attachments/569063021918552074/574198092471992353/5088f35b064742a3a9b69a7a0806d595.jpg");
-					DiscordAPI.chatDefaultHost(tag,Util.IDtoMention("544529530866368522")+"遂に燃えたぞ");
+					tag.chatDefaultHost(Util.IDtoMention("544529530866368522")+"遂に燃えたぞ");
 				}
 				//DiscordAPI.chatDefaultHost(Util.IDtoMention(con.userid)+s);
 			}
@@ -191,17 +190,17 @@ public class Kaikoga implements IModule,IAutoSave{
 		if(t!=null||"カイコガランキング".equals(con.text)){
 			String s=rank(t);
 			if(con.mute)System.out.println(s);
-			else DiscordAPI.chatDefaultHost(tag,s);
+			else tag.chatDefaultHost(s);
 		}
 		if("534060196767465485".equals(con.userid)){
 			str=tag.getTag("本人ボーナス");
 			if(str!=null) {
-				if(str.isEmpty())DiscordAPI.chatDefaultHost(tag,upKaikoga/10F+"%");
+				if(str.isEmpty())tag.chatDefaultHost(upKaikoga/10F+"%");
 				else try{
 					upKaikoga=(int) (Double.parseDouble(str)*10D);
 					if(upKaikoga>100)upKaikoga=100;
 					BouyomiProxy.Config.put("カイコガ本人ボーナス",Integer.toString(upKaikoga));
-					DiscordAPI.chatDefaultHost(tag,"本人ボーナスを"+upKaikoga/10F+"%に設定");
+					tag.chatDefaultHost("本人ボーナスを"+upKaikoga/10F+"%に設定");
 				}catch(NumberFormatException nfe) {
 
 				}

@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import bouyomi.BouyomiProxy;
 import bouyomi.Counter;
-import bouyomi.DiscordAPI;
 import bouyomi.DiscordBOT;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
@@ -31,7 +30,7 @@ public class Memo implements IModule,IAutoSave{
 			if(del!=null) {
 				data.put(del,"メモは管理者により抹消されました");
 				saved=false;
-				DiscordAPI.chatDefaultHost(tag,Counter.getUserName(del)+"のメモを抹消しました");
+				tag.chatDefaultHost(Counter.getUserName(del)+"のメモを抹消しました");
 			}
 		}
 		String get=tag.getTag("メモ取得");
@@ -44,7 +43,7 @@ public class Memo implements IModule,IAutoSave{
 			tag.con.addTask.add("メモを消去しました");
 			DiscordBOT.DefaultHost.log(tag.con.user+"がメモを消去");
 		}else if(t.length()>100) {
-			DiscordAPI.chatDefaultHost(tag,"100文字制限を超えています");
+			tag.chatDefaultHost("100文字制限を超えています");
 		}else if(t.isEmpty()) {
 			getMemo(tag, u);
 		}else {
@@ -61,7 +60,7 @@ public class Memo implements IModule,IAutoSave{
 		sb.append("(").append(u).append(")");
 		sb.append(" のメモ：\n/*");
 		sb.append(data.getOrDefault(u,"null"));
-		DiscordAPI.chatDefaultHost(tag,sb.toString());
+		tag.chatDefaultHost(sb.toString());
 	}
 	@Override
 	public void autoSave(){

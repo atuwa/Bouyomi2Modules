@@ -12,9 +12,9 @@ import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -105,7 +105,7 @@ public class Celeron implements IModule,IDailyUpdate,IAutoSave{
 			}
 			c+=" 確率"+now+"%";
 			System.out.println(c);
-			if(!tag.con.mute)DiscordAPI.chatDefaultHost(tag,c);
+			if(!tag.con.mute)tag.chatDefaultHost(c);
 		}
 		String p=tag.getTag("Celeron率変更");
 		if(p!=null) {
@@ -115,17 +115,17 @@ public class Celeron implements IModule,IDailyUpdate,IAutoSave{
 					if(i>=0) {
 						if(i>100)i=100;
 						now=i;
-						DiscordAPI.chatDefaultHost(tag,"Celeron率を"+now+"%に変更しました");
+						tag.chatDefaultHost("Celeron率を"+now+"%に変更しました");
 						DailyUpdate.updater.write();
 					}
 				}catch(NumberFormatException t) {
-					DiscordAPI.chatDefaultHost(tag,"変更できませんでした");
+					tag.chatDefaultHost("変更できませんでした");
 				}
-			}else DiscordAPI.chatDefaultHost(tag,"権限がありません");
+			}else tag.chatDefaultHost("権限がありません");
 		}
 		p=tag.getTag("Celeron率");
 		if(p!=null) {
-			DiscordAPI.chatDefaultHost(tag,"現在のCeleron率は"+now+"%です");
+			tag.chatDefaultHost("現在のCeleron率は"+now+"%です");
 		}
 		if(tag.con.userid!=null&&(tag.con.mentions.contains("539105406107254804")||
 				tag.con.mentions.contains("581268794794573870"))) {

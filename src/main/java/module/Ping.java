@@ -1,6 +1,5 @@
 package module;
 
-import bouyomi.DiscordAPI;
 import bouyomi.IModule;
 import bouyomi.Tag;
 
@@ -23,7 +22,7 @@ public class Ping implements IModule{
 			ping=false;
 			String s=System.currentTimeMillis()-t+"ms";
 			System.out.println("ping"+s);
-			DiscordAPI.chatDefaultHost(tag,s);
+			tag.chatDefaultHost(s);
 		}
 	}
 }

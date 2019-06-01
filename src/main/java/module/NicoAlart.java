@@ -3,8 +3,6 @@ package module;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -16,10 +14,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import bouyomi.BouyomiProxy;
-import bouyomi.DiscordAPI;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
+import bouyomi.Util;
 import bouyomi.Util.JsonUtil;
 
 public class NicoAlart implements IModule,IAutoSave, Runnable{
@@ -52,14 +51,14 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 		if(s!=null) {
 			try{
 				int cid=Integer.parseInt(s);
-				DiscordAPI.chatDefaultHost(tag,"検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(null,cid));
+				tag.chatDefaultHost("検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(null,cid));
 				Live[] lives=getLives(null,cid);
 				if(lives.length>0) {
 					StringBuilder sb=new StringBuilder();
 					for(Live lv:lives)sb.append(lv);
 					s=sb.toString();
 				}else s="放送されてません";
-				DiscordAPI.chatDefaultHost(tag,s);
+				tag.chatDefaultHost(s);
 			}catch(NumberFormatException|IOException e){
 				e.printStackTrace();
 			}
@@ -69,12 +68,12 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 			try{
 				int cid=Integer.parseInt(s);
 				String q="ゲーム OR 描いてみた OR リスナーは外部記憶装置 OR 通知用";
-				DiscordAPI.chatDefaultHost(tag,"検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(q,cid));
+				tag.chatDefaultHost("検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(q,cid));
 				String js=getLiveJSON(q,cid);
-				DiscordAPI.chatDefaultHost(tag,js);
+				tag.chatDefaultHost(js);
 			}catch(NumberFormatException|IOException e){
 				e.printStackTrace();
-				chatException(tag, e);
+				Util.chatException(tag,null,e);
 			}
 		}
 		for(Entry<String, String> e:shortcutDB.entrySet()) {
@@ -85,11 +84,11 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 					try{
 						Live[] lives=getLives(null,id);
 						if(lives.length>0) {
-							DiscordAPI.chatDefaultHost(tag,"https://live2.nicovideo.jp/watch/"+lives[0].contentId+" でしてる");
-						}else DiscordAPI.chatDefaultHost(tag,"多分してない/*ニコニコの検索サーバが遅延してるかも");
+							tag.chatDefaultHost("https://live2.nicovideo.jp/watch/"+lives[0].contentId+" でしてる");
+						}else tag.chatDefaultHost("多分してない/*ニコニコの検索サーバが遅延してるかも");
 					}catch(IOException ex){
-						DiscordAPI.chatDefaultHost(tag,"わかんにゃい！");
-						chatException(tag, ex);
+						tag.chatDefaultHost("わかんにゃい！");
+						Util.chatException(tag,null,ex);
 					}
 				}catch(NumberFormatException nfe) {
 
@@ -110,13 +109,13 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 						try {
 							int co=Integer.parseInt(m.group());
 							shortcutDB.put(key,val=Integer.toString(co));
-							DiscordAPI.chatDefaultHost(tag,val+"放送してる？ に完全一致でco"+co+"が放送してるか取得できるように登録");
+							tag.chatDefaultHost(val+"放送してる？ に完全一致でco"+co+"が放送してるか取得できるように登録");
 						}catch(NumberFormatException nfe) {
-							DiscordAPI.chatDefaultHost(tag,"コミュID指定ミスってる");
+							tag.chatDefaultHost("コミュID指定ミスってる");
 						}
 					}
 				}catch(Exception e) {
-					chatException(tag,e);
+					Util.chatException(tag,null,e);
 				}
 			}
 		}
@@ -145,16 +144,16 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 					try{
 						Live[] lives=getLives(null,co);
 						if(lives.length>0) {
-							DiscordAPI.chatDefaultHost(tag,"https://live2.nicovideo.jp/watch/"+lives[0].contentId+" でしてる");
-						}else DiscordAPI.chatDefaultHost(tag,"してない");
+							tag.chatDefaultHost("https://live2.nicovideo.jp/watch/"+lives[0].contentId+" でしてる");
+						}else tag.chatDefaultHost("してない");
 					}catch(IOException e){
 						miss=true;
 					}
 				}catch(NumberFormatException nfe) {
-					DiscordAPI.chatDefaultHost(tag,"コミュID指定ミスってる");
+					tag.chatDefaultHost("コミュID指定ミスってる");
 				}
 			}else miss=true;
-			if(miss)DiscordAPI.chatDefaultHost(tag,"わかんにゃい！");
+			if(miss)tag.chatDefaultHost("わかんにゃい！");
 		}
 	}
 	public static int getCo(String org) {
@@ -203,13 +202,6 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 		}catch(IOException e){
 			e.printStackTrace();
 		}
-	}
-	public boolean chatException(Tag tag, Exception e) {
-		StringWriter sw=new StringWriter();
-		PrintWriter pw=new PrintWriter(sw);
-		e.printStackTrace(pw);
-		pw.close();
-		return DiscordAPI.chatDefaultHost(tag,sw.toString());
 	}
 	@Override
 	public void run(){

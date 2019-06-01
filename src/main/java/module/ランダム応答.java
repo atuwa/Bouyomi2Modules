@@ -8,7 +8,6 @@ import java.util.Random;
 import bouyomi.BouyomiProxy;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -34,7 +33,7 @@ public class ランダム応答 implements IModule, IDailyUpdate,IAutoSave{
 			Random r=new Random(seed);
 			int index=r.nextInt(list.size());
 			String get=list.get(index);
-			DiscordAPI.chatDefaultHost(tag,"/"+get);
+			tag.chatDefaultHost("/"+get);
 		}
 	}
 	@Override

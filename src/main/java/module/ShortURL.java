@@ -9,7 +9,6 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import bouyomi.DiscordAPI;
 import bouyomi.IModule;
 import bouyomi.Tag;
 import bouyomi.Util.JsonUtil;
@@ -26,8 +25,8 @@ public class ShortURL implements IModule{
 			if(url==null)return;
 		}
 		if(url.isEmpty()) {
-			if(mode==1)DiscordAPI.chatDefaultHost(tag,"https://nazr.in/");
-			else DiscordAPI.chatDefaultHost(tag,"https://kisu.me/");
+			if(mode==1)tag.chatDefaultHost("https://nazr.in/");
+			else tag.chatDefaultHost("https://kisu.me/");
 			return;
 		}
 		try{
@@ -53,7 +52,7 @@ public class ShortURL implements IModule{
 			if(mode==0)ret="https://kisu.me/"+JsonUtil.get(json,"shorten").toString();
 			else if(mode==1)ret=JsonUtil.get(json,"shortURL").toString();
 			System.out.println("短縮="+ret+"　元URL="+url);
-			DiscordAPI.chatDefaultHost(tag,"短縮結果 "+ret);
+			tag.chatDefaultHost("短縮結果 "+ret);
 		}catch(IOException e){
 			e.printStackTrace();
 		}

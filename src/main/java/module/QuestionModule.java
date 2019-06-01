@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import bouyomi.BouyomiConection;
-import bouyomi.DiscordAPI;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -44,7 +44,7 @@ public class QuestionModule implements IModule,IAutoSave{
 				else if(tag.isEmpty()){
 					long e=now.endTime-System.currentTimeMillis();
 					e=e/1000;
-					DiscordAPI.chatDefaultHost(tm,e+"秒後に集計します");
+					tm.chatDefaultHost(e+"秒後に集計します");
 				}else try{
 					int i=Integer.parseInt(tag);
 					if(i<0) {
@@ -100,7 +100,7 @@ public class QuestionModule implements IModule,IAutoSave{
 		}
 		if(text.indexOf("アンケート中?")>=0||text.indexOf("アンケート中？")>=0
 				||text.indexOf("アンケ中?")>=0||text.indexOf("アンケ中？")>=0) {
-			DiscordAPI.chatDefaultHost(tm,now==null?"してない":"してる");
+			tm.chatDefaultHost(now==null?"してない":"してる");
 		}
 	}
 	public static int to_i(String s) {
@@ -176,7 +176,7 @@ public class QuestionModule implements IModule,IAutoSave{
 					result.append(i-1).append(" : ").append(k).append("\n");
 				}
 				result.append("です");
-				if(DiscordAPI.chatDefaultHost(tm,result.toString())) {
+				if(tm.chatDefaultHost(result.toString())) {
 					gid=tm.getGuild().getId();
 					cid=tm.getTextChannel().getId();
 					tm.con.addTask.add("アンケートを開始します");

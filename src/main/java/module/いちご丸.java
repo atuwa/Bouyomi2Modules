@@ -17,7 +17,6 @@ import bouyomi.BouyomiProxy;
 import bouyomi.Counter;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -48,15 +47,17 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				if("534060228099178537".equals(tag.con.userid))t.いちご丸が呼び出し();
 				else t.呼び出し();
 			}else if(今日引いた人達.contains(tag.con.userid)) {
-				DiscordAPI.chatDefaultHost(tag,"今日はもう引いたでしょ/*"+tag.con.user+"さん");
+				tag.chatDefaultHost("今日はもう引いたでしょ/*"+tag.con.user+"さん");
 			}else new 抽選(tag).呼び出し();
 		}
-		if(tag.con.text.equals("今何メートル")||tag.con.text.toLowerCase().equals("今何m")) {
-			DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+合計距離+"m");
-		}
-		if(tag.con.text.equals("今何キロメートル")||tag.con.text.toLowerCase().equals("今何km")) {
+		if(tag.con.text.equals("今何メートル")||tag.con.text.toLowerCase().equals("今何m")||
+				tag.con.text.equals("今何キロメートル")||tag.con.text.toLowerCase().equals("今何km")) {
+			StringBuilder 投稿メッセージ=new StringBuilder();
+			if(tag.con.mute)投稿メッセージ.append("/");
+			投稿メッセージ.append(合計距離).append("m(");
 	        DecimalFormat df = new DecimalFormat("#,##0.0");
-			DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+df.format(合計距離/1000D)+"km");
+			投稿メッセージ.append(df.format(合計距離/1000D)).append("km)");
+			tag.chatDefaultHost(投稿メッセージ.toString());
 		}
 		String パラメータ=tag.getTag("ちゃんと歩いたよ");
 		if(パラメータ!=null) {
@@ -70,7 +71,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				double 指定値=Double.parseDouble(数値抽出文字列);
 				if(キロ指定)指定値*=1000;
 				if(指定値>20000) {
-					DiscordAPI.chatDefaultHost(tag,"指定ミスってない？("+指定値+"m)");
+					tag.chatDefaultHost("指定ミスってない？("+指定値+"m)");
 				}else {
 					int 元の距離=合計距離;
 					合計距離=(int) (合計距離-指定値);
@@ -89,29 +90,29 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 					投稿メッセージ.append(df.format(合計距離/1000D)).append("km)");
 					if(limit)投稿メッセージ.append("下限-2km");
 					保存済=false;
-					DiscordAPI.chatDefaultHost(tag,投稿メッセージ.toString());
+					tag.chatDefaultHost(投稿メッセージ.toString());
 				}
 			}else tag.con.addTask.add("数値を指定してください");
 		}
 		パラメータ=tag.getTag("いちご値");
 		if(パラメータ!=null) {
 			if(パラメータ.isEmpty()) {
-				DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+Integer.toString(合計距離));
+				tag.chatDefaultHost(tag.con.mute?"/":""+Integer.toString(合計距離));
 			}else if(tag.isAdmin())	try{
 				合計距離=Integer.parseInt(パラメータ);
 				保存済=false;
 		        DecimalFormat df = new DecimalFormat("#,##0.0");
-				DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/残り":"残り"+合計距離+"m("+df.format(合計距離/1000D)+"km)");
+				tag.chatDefaultHost(tag.con.mute?"/残り":"残り"+合計距離+"m("+df.format(合計距離/1000D)+"km)");
 			}catch(NumberFormatException nfe) {}
 		}
 		パラメータ=tag.getTag("痩せろデブをもう一回引けるようにする");
 		if(パラメータ!=null&&tag.isAdmin()) {
 			if(パラメータ.isEmpty()) {
-				DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+今日引いた人達.size()+"件の引いた人リストを消去しました");
+				tag.chatDefaultHost(tag.con.mute?"/":""+今日引いた人達.size()+"件の引いた人リストを消去しました");
 				今日引いた人達.clear();
 			}else if(今日引いた人達.contains(パラメータ)) {
 				if(今日引いた人達.remove(パラメータ)) {
-					DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+Counter.getUserName(パラメータ)+"を引いた人リストから消去しました");
+					tag.chatDefaultHost(tag.con.mute?"/":""+Counter.getUserName(パラメータ)+"を引いた人リストから消去しました");
 				}
 			}
 		}
@@ -166,10 +167,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append(Util.IDtoMention(tag.con.userid));
 			sb.append("0.1%のこれを引くとは凄い運だな\n10km行く");
 			sb.append("(").append(ランダム値).append(")");
-			if(リミッター())sb.append("20km上限");
+			if(リミッター())sb.append("42.195km上限");
 			String s=sb.toString();
 			System.out.println(s);
-			DiscordAPI.chatDefaultHost(tag,s);
+			tag.chatDefaultHost(s);
 		}
 		private void むしゃむしゃ(){
 			//単位はメートルで
@@ -183,7 +184,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("/*抽選者：").append(tag.con.user);
 			String s=sb.toString();
 			System.out.println(s);
-			DiscordAPI.chatDefaultHost(tag,s);
+			tag.chatDefaultHost(s);
 		}
 		private void 行く(){
 			//単位はメートルで
@@ -193,21 +194,21 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			if(tag.con.mute)sb.append("/");
 			sb.append(距離);
 			sb.append("m行く(").append(ランダム値).append(")");
-			if(リミッター())sb.append("20km上限");
+			if(リミッター())sb.append("42.195km上限");
 			sb.append("/*抽選者：").append(tag.con.user);
 			String s=sb.toString();
 			System.out.println(s);
-			DiscordAPI.chatDefaultHost(tag,s);
+			tag.chatDefaultHost(s);
 		}
 		private void やだ(){
 			String s="行かない("+ランダム値+")/*抽選者："+tag.con.user;
 			System.out.println(s);
 			if(tag.con.mute)s="/"+s;
-			DiscordAPI.chatDefaultHost(tag,s);
+			tag.chatDefaultHost(s);
 		}
 	}
 	protected boolean リミッター() {
-		int 最大値=20*1000;//TODO 上限20km
+		int 最大値=42195;//TODO 上限42.195km
 		int 最小値=-2*1000;//TODO 下限-2km
 		if(合計距離>最大値) {
 			合計距離=最大値;

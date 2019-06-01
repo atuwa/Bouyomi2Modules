@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import bouyomi.BouyomiProxy;
-import bouyomi.DiscordAPI;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -41,7 +41,7 @@ public class 生放送メンション implements IModule, IAutoSave{
 					e=e+","+cid;//既にあるやつ＋区切り文字＋追加分
 				}
 				希望者リスト.put(uid,e);
-				DiscordAPI.chatDefaultHost(tag,"登録値="+e);
+				tag.chatDefaultHost("登録値="+e);
 			}
 		}
 		co=tag.getTag("生放送メンション解除");
@@ -58,7 +58,7 @@ public class 生放送メンション implements IModule, IAutoSave{
 						if(!e.isEmpty()&&e.charAt(e.length()-1)==',') {
 							e=e.substring(0,e.length()-1);
 						}
-						DiscordAPI.chatDefaultHost(tag,"登録値="+e);
+						tag.chatDefaultHost("登録値="+e);
 						希望者リスト.put(uid,e);
 					}
 				}
@@ -69,8 +69,8 @@ public class 生放送メンション implements IModule, IAutoSave{
 			String uid=tag.con.userid;
 			String e=希望者リスト.get(uid);
 			if(e!=null) {
-				DiscordAPI.chatDefaultHost(tag,"登録値="+e);
-			}else DiscordAPI.chatDefaultHost(tag,"登録されてません");
+				tag.chatDefaultHost("登録値="+e);
+			}else tag.chatDefaultHost("登録されてません");
 		}
 		if(tag.isAdmin()) {
 			co=tag.getTag("生放送イベント生成");

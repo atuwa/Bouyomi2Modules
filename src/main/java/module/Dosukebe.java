@@ -34,7 +34,7 @@ import javax.swing.border.LineBorder;
 import bouyomi.BouyomiProxy;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
-import bouyomi.DiscordAPI;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -108,7 +108,7 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 		if(tag.con.text.equals("ミュージックスタート")){
 			if(tag.con.userid==null)tag.con.addTask.add("ユーザID取得エラー");
 			if(used.contains(tag.con.userid)) {
-				DiscordAPI.chatDefaultHost(tag,"今日は既に引いてます");
+				tag.chatDefaultHost("今日は既に引いてます");
 			}else{
 				if(!tag.isAdmin()&&!"536401162300162049".equals(tag.con.userid)) {
 					//used.add(tag.con.userid);
@@ -132,7 +132,7 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 				sb.append(" 確率").append(now/100d).append("+").append((k-now)/100d).append("%");
 				String s=sb.toString();
 				System.out.println(s);
-				DiscordAPI.chatDefaultHost(tag,s);
+				tag.chatDefaultHost(s);
 			}
 		}
 		if(tag.con.text.equals("ドスケベストップ")||tag.con.text.equals("ドスケベ停止")){
@@ -147,12 +147,12 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 				if(k>10000)k=10000;
 				if(tag.con.mute)sb.append("/");
 				sb.append(now/100d).append("+").append((k-now)/100d).append("=").append(k/100d).append("%");
-				DiscordAPI.chatDefaultHost(tag,sb.toString());
+				tag.chatDefaultHost(sb.toString());
 			}else if(tag.isAdmin()||"536401162300162049".equals(tag.con.userid)){
 				try {
 					String old=Double.toString(now/100D);
 					now=(int) (Double.parseDouble(s)*100D);
-					DiscordAPI.chatDefaultHost(tag,(tag.con.mute?"/":"")+"ドスケベ率を"+old+"%から"+now/100D+"%に変更しました");
+					tag.chatDefaultHost((tag.con.mute?"/":"")+"ドスケベ率を"+old+"%から"+now/100D+"%に変更しました");
 				}catch(NumberFormatException nfe) {
 
 				}
@@ -165,12 +165,12 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			for(String t:list)sb.append(t).append("\n");
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 		s=tag.getTag("ミュージックスタート");
 		if(s!=null) {
 			if(s.isEmpty()) {
-				if(!tag.con.text.equals("ミュージックスタート"))DiscordAPI.chatDefaultHost(tag,"パラメータが不正です");
+				if(!tag.con.text.equals("ミュージックスタート"))tag.chatDefaultHost("パラメータが不正です");
 			}else if(tag.isAdmin()||"536401162300162049".equals(tag.con.userid)) {
 				File dir=new File("Dosukebe");
 				String[] list=dir.list();
@@ -186,13 +186,13 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 							PlayThread.play();
 						}
 						b=false;
-						DiscordAPI.chatDefaultHost(tag,s+"を再生します");
+						tag.chatDefaultHost(s+"を再生します");
 					}catch(MalformedURLException e){
 						e.printStackTrace();
 					}
 				}
-				if(b)DiscordAPI.chatDefaultHost(tag,s+"は存在しません");
-			}else DiscordAPI.chatDefaultHost(tag,"権限がありません");
+				if(b)tag.chatDefaultHost(s+"は存在しません");
+			}else tag.chatDefaultHost("権限がありません");
 		}
 		s=tag.getTag("ドスケベ再生待ち");
 		if(s!=null) {
@@ -202,12 +202,12 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 				String name=f.getName();
 				sb.append("\n").append(name);
 			}
-			DiscordAPI.chatDefaultHost(tag,sb.toString());
+			tag.chatDefaultHost(sb.toString());
 		}
 		s=tag.getTag("ドスケベ音量");
 		if(s!=null) {
 			if(s.isEmpty()) {
-				DiscordAPI.chatDefaultHost(tag,tag.con.mute?"/":""+"ドスケベ音量は"+WAVPlayer.Volume+"です");
+				tag.chatDefaultHost(tag.con.mute?"/":""+"ドスケベ音量は"+WAVPlayer.Volume+"です");
 			}else volume(s);
 		}
 	}

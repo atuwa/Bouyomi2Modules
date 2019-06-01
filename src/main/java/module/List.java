@@ -10,7 +10,6 @@ import java.util.Properties;
 import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
 import bouyomi.Counter.ICountEvent;
-import bouyomi.DiscordAPI;
 import bouyomi.IModule;
 import bouyomi.Tag;
 
@@ -58,7 +57,7 @@ public class List implements IModule,ICountEvent{
 					//sb.append(sdf.format(new Date(rs.getLong("time"))));
 					sb.append("\n");
 				}
-				DiscordAPI.chatDefaultHost(tag,sb.toString());
+				tag.chatDefaultHost(sb.toString());
 			}catch(SQLException e){
 				e.printStackTrace();
 			}finally{
