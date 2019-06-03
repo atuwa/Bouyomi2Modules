@@ -641,7 +641,7 @@ public class TubeAPI implements IModule,IAutoSave{
 			//con.text="";
 			TAG.chatDefaultHost(statusAllJson());
 		}
-		tag=TAG.getTag("動画位置");
+		tag=TAG.getTag("動画位置","動画シーク");
 		if(tag!=null) {
 			try {
 				String s=Integer.toString(Integer.parseInt(tag));

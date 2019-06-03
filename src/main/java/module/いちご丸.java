@@ -51,7 +51,9 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			}else new 抽選(tag).呼び出し();
 		}
 		if(tag.con.text.equals("今何メートル")||tag.con.text.toLowerCase().equals("今何m")||
-				tag.con.text.equals("今何キロメートル")||tag.con.text.toLowerCase().equals("今何km")) {
+				tag.con.text.equals("今何キロメートル")||tag.con.text.toLowerCase().equals("今何km")||
+				tag.con.text.equals("今何メートル?")||tag.con.text.toLowerCase().equals("今何m?")||
+				tag.con.text.equals("今何メートル？")||tag.con.text.toLowerCase().equals("今何ｍ？")) {
 			StringBuilder 投稿メッセージ=new StringBuilder();
 			if(tag.con.mute)投稿メッセージ.append("/");
 			投稿メッセージ.append(合計距離).append("m(");
@@ -147,17 +149,17 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		public void いちご丸が呼び出し() {
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
 			if(ランダム値<5)まさかこれを引くとは();
-			else if(ランダム値<10)むしゃむしゃ();
-			else if(ランダム値<260)行く();
-			else やだ();
+			else if(ランダム値<55)むしゃむしゃ("5%");
+			else if(ランダム値<305)行く("25%");
+			else やだ("63.5%");
 		}
 		public void 呼び出し() {
 			今日引いた人達.add(tag.con.userid);
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
 			if(ランダム値<1)まさかこれを引くとは();
-			else if(ランダム値<11)むしゃむしゃ();
-			else if(ランダム値<261)行く();
-			else やだ();
+			else if(ランダム値<11)むしゃむしゃ("1%");
+			else if(ランダム値<261)行く("25%");
+			else やだ("72.7%");
 			保存済=false;
 		}
 		private void まさかこれを引くとは(){
@@ -165,14 +167,15 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(Util.IDtoMention(tag.con.userid));
-			sb.append("0.1%のこれを引くとは凄い運だな\n10km行く");
+			DecimalFormat df = new DecimalFormat("##0.0%");
+			sb.append(df.format(ランダム値+1)).append("のこれを引くとは凄い運だな\n10km行く");
 			sb.append("(").append(ランダム値).append(")");
 			if(リミッター())sb.append("42.195km上限");
 			String s=sb.toString();
 			System.out.println(s);
 			tag.chatDefaultHost(s);
 		}
-		private void むしゃむしゃ(){
+		private void むしゃむしゃ(String 確率メッセージ){
 			//単位はメートルで
 			int 距離=ランダム生成源.nextInt(350)+50;
 			合計距離=合計距離-距離;
@@ -182,11 +185,12 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("m減った(").append(ランダム値).append(")");
 			if(リミッター())sb.append("-2km下限");
 			sb.append("/*抽選者：").append(tag.con.user);
+			sb.append(" 確率").append(確率メッセージ);
 			String s=sb.toString();
 			System.out.println(s);
 			tag.chatDefaultHost(s);
 		}
-		private void 行く(){
+		private void 行く(String 確率メッセージ){
 			//単位はメートルで
 			int 距離=ランダム生成源.nextInt(450)+300;
 			合計距離=合計距離+距離;
@@ -196,14 +200,18 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("m行く(").append(ランダム値).append(")");
 			if(リミッター())sb.append("42.195km上限");
 			sb.append("/*抽選者：").append(tag.con.user);
+			sb.append(" 確率").append(確率メッセージ);
 			String s=sb.toString();
 			System.out.println(s);
 			tag.chatDefaultHost(s);
 		}
-		private void やだ(){
-			String s="行かない("+ランダム値+")/*抽選者："+tag.con.user;
+		private void やだ(String 確率メッセージ){
+			StringBuilder sb=new StringBuilder();
+			if(tag.con.mute)sb.append("/");
+			sb.append("行かない(").append(ランダム値).append(")/*抽選者：").append(tag.con.user);
+			sb.append(" 確率").append(確率メッセージ);
+			String s=sb.toString();
 			System.out.println(s);
-			if(tag.con.mute)s="/"+s;
 			tag.chatDefaultHost(s);
 		}
 	}
