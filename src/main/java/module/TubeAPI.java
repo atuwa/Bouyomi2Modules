@@ -649,7 +649,7 @@ public class TubeAPI implements IModule,IAutoSave{
 					TAG.chatDefaultHost("/動画を"+s+"秒にシークしました");
 				}else TAG.chatDefaultHost("/動画シーク失敗");
 			}catch(Exception e) {
-
+				TAG.con.addTask.add("パラメータが間違ってます");
 			}
 		}
 		if(DiscordBOT.DefaultHost!=null) {
@@ -724,6 +724,6 @@ public class TubeAPI implements IModule,IAutoSave{
 	}
 	@Override
 	public void shutdownHook() {
-		TubeAPI.operation("stop");
+		operation("stop");
 	}
 }

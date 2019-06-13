@@ -43,17 +43,20 @@ public class List implements IModule,ICountEvent{
 				statement=connection.createStatement();
 				int load=5;
 				String sql;
-				if(user==null)sql="select * from count limit "+load+" offset "+(counts(null)-load);
-				else sql="select * from count where id = "+user+" limit "+load+" offset "+(counts(user)-load);
+				if(user==null) {
+					sql="select * from count limit "+load+" offset "+(counts(null)-load);
+				}else {
+					sql="select * from count where id = "+user+" limit "+load+" offset "+(counts(user)-load);
+				}
 				//String sql="select * from count order by time desc";
-				System.out.println(sql);
+				//System.out.println(sql);
 				ResultSet rs=statement.executeQuery(sql);
 				//SimpleDateFormat sdf=new SimpleDateFormat("yy年MM月dd日HH時mm分ss秒SSS");
-				StringBuilder sb=new StringBuilder();
+				StringBuilder sb=new StringBuilder("/");
 				for(int i=0;i<5&&rs.next();i++){
 					String w=rs.getString("word");
 					if(w.length()>100)w=w.length()+"文字省略";
-					sb.append(rs.getString("name")).append(w);
+					sb.append(rs.getString("name")).append("(").append(counts(rs.getString("id"))).append(")").append(w);
 					//sb.append(sdf.format(new Date(rs.getLong("time"))));
 					sb.append("\n");
 				}
@@ -118,11 +121,17 @@ public class List implements IModule,ICountEvent{
 		try{
 			connection=driver.connect(url,new Properties());
 			statement=connection.createStatement();
-			String sql="insert into count values('"+bc.userid+"','"+bc.user+"','"+word+"','"+bc.text+"',"+System.currentTimeMillis()+");";
-			statement.execute(sql);
+			StringBuilder sql=new StringBuilder("insert into count values('");
+			sql.append(bc.userid).append("','");
+			sql.append(SQLiteUtil.EscapeSQL(bc.user)).append("','");
+			sql.append(SQLiteUtil.EscapeSQL(word)).append("','");
+			sql.append(SQLiteUtil.EscapeSQL(bc.text)).append("',");
+			sql.append(System.currentTimeMillis()).append(")");
+			//System.out.println(sql.toString());
+			statement.execute(sql.toString());
 			//System.out.println("カウントDB書き込み");
 		}catch(SQLException e){
-			//e.printStackTrace();
+			e.printStackTrace();
 		}finally{
 			try{
 				if(statement!=null){

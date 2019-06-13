@@ -26,6 +26,7 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 	private int lastWriteHashCode,lastWriteHashCodeA;
 	public static final HashMap<String,String> shortcutDB=new HashMap<String,String>();
 	public static HashMap<String,String> alarted=new HashMap<String,String>();
+	public static String DefaultQuery="ゲーム OR 描いてみた OR リスナーは外部記憶装置 OR 通知用";
 
 	public static final String gid="533577441952661504";
 	public static final String cid="569063021918552074";
@@ -67,9 +68,8 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 		if(s!=null) {
 			try{
 				int cid=Integer.parseInt(s);
-				String q="ゲーム OR 描いてみた OR リスナーは外部記憶装置 OR 通知用";
-				tag.chatDefaultHost("検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(q,cid));
-				String js=getLiveJSON(q,cid);
+				tag.chatDefaultHost("検索URL=https://api.search.nicovideo.jp/api/v2/live/contents/search"+getParm(null,cid));
+				String js=getLiveJSON(DefaultQuery,cid);
 				tag.chatDefaultHost(js);
 			}catch(NumberFormatException|IOException e){
 				e.printStackTrace();
@@ -319,7 +319,7 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 		return res.toString("utf-8");
 	}
 	private static String getParm(String q,int... communityId) {
-		if(q==null)q="	ゲーム OR 描いてみた OR リスナーは外部記憶装置 OR 通知用";
+		if(q==null)q=DefaultQuery;
 		try{
 			q=URLEncoder.encode(q,"utf-8");
 		}catch(UnsupportedEncodingException e){
