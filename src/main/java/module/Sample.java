@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Random;
 
 import bouyomi.DiscordBOT;
@@ -17,6 +18,7 @@ import bouyomi.Tag;
 import bouyomi.Util;
 import module.TubeAPI.PlayVideoEvent;
 import module.TubeAPI.PlayVideoTitleEvent;
+import net.dv8tion.jda.api.entities.Role;
 
 public class Sample implements IModule{
 
@@ -138,6 +140,22 @@ public class Sample implements IModule{
 		if(org!=null&&tag.con instanceof BouyomiBOTConection&&tag.isAdmin()) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			DiscordBOT.DefaultHost.getTextChannel(bc.textChannel.getId()).deleteMessageById(org).queue();
+		}
+		org=tag.getTag("役職ID");
+		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
+			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+			List<Role> l;
+			if(!org.isEmpty()) {
+				if(org.equals("everyone"))org="@everyone";
+				l=bc.server.getRolesByName(org,false);
+			}
+			else l=bc.server.getRoles();
+			StringBuilder sb=new StringBuilder("/");
+			//if(tag.con.mute)sb.append("/");
+			for(Role r:l) {
+				sb.append(r.getName().replaceAll("@","")).append(" のID ").append(r.getId()).append("\n");
+			}
+			if(sb.length()>1)tag.chatDefaultHost(sb.toString());
 		}
 	}
 	private void icon(BouyomiBOTConection bc,String url) {
