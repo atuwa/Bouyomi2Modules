@@ -126,7 +126,7 @@ public class Alarm implements IModule,IAutoSave{
 			try{
 				if(sleep>0)Thread.sleep(sleep);
 				if(map.containsKey(id+","+gid+","+cid))DiscordBOT.DefaultHost.send(gid,cid,Util.IDtoMention(id)+"アラーム");
-				map.remove(id);
+				map.remove(id+","+gid+","+cid);
 				savedmap=false;
 				System.out.println(getName()+"終了");
 			}catch(InterruptedException e){
