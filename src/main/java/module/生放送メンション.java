@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import bouyomi.BouyomiProxy;
+import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
@@ -14,6 +15,10 @@ import bouyomi.Util;
 import bouyomi.Util.JsonUtil;
 import module.NicoAlart.Live;
 import module.NicoAlart.NicoLiveEvent;
+import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
 
 /**生放送が始まった時に希望者にだけメンション飛ばす機能*/
 public class 生放送メンション implements IModule, IAutoSave{
@@ -104,18 +109,31 @@ public class 生放送メンション implements IModule, IAutoSave{
 			Live[] arr=((NicoLiveEvent)o).live;
 			for(Live lv:arr) {
 				if(lv.communityId==null)continue;
-				StringBuilder sb=new StringBuilder("/生放送「"+lv.title+"」が開始されました\n");
-				System.out.println(sb.toString());
+				StringBuilder sb=new StringBuilder();
+				System.out.println("/生放送「"+lv.title+"」が開始されました\n");
 				for(Entry<String, String> es:希望者リスト.entrySet()) {
 					String rv=es.getValue();//希望者ごとの希望するコミュニティCSV
 					for(String c:rv.split(",")) {
 						if(lv.communityId.equals(c)) {
-							sb.append(Util.IDtoMention(es.getKey())).append("\n");
+							try{
+								User user=DiscordBOT.DefaultHost.jda.getUserById(es.getKey());
+								PrivateChannel pc=user.openPrivateChannel().complete();
+								MessageBuilder mb=new MessageBuilder().append("/生放送「");
+								mb.append(lv.title).append("」が開始されました\n");
+								mb.append("https://live2.nicovideo.jp/watch/").append(lv.contentId);
+								MessageAction ma=pc.sendMessage(mb.build());
+								ma.queue();
+							}catch(RuntimeException e) {
+								sb.append(Util.IDtoMention(es.getKey())).append("\n");
+							}
 							break;
 						}
 					}
 				}
-				DiscordAPI.chatDefaultHost(NicoAlart.gid,NicoAlart.cid,sb.toString());
+				if(sb.length()>0) {
+					StringBuilder s=new StringBuilder("/生放送「").append(lv.title).append("」が開始されました\n");
+					DiscordAPI.chatDefaultHost(NicoAlart.gid,NicoAlart.cid,s.append(sb).toString());
+				}
 			}
 		}
 	}
