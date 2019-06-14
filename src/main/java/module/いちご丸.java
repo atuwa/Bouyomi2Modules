@@ -231,7 +231,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		private void 行く(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=ランダム生成源.nextInt(450)+300;
+			int 距離=ランダム生成源.nextInt(650)+350;
 			合計距離=合計距離+距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
