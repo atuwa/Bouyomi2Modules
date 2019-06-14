@@ -28,15 +28,28 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	private int 合計距離;
 	private boolean 保存済;
 	private ArrayList<String> 今日引いた人達=new ArrayList<String>();
+	private static int 初期確率=250,ノルマ=1500;
+	private int 確率;
+	private ArrayList<String> 今日歩いた距離=new ArrayList<String>();
+	private boolean 今日歩いた距離保存済;
 	public いちご丸(){
 		try{
 			BouyomiProxy.load(今日引いた人達,"いちご丸.txt");
 			合計距離=Integer.parseInt(今日引いた人達.get(0),16);
 			今日引いた人達.remove(0);
+			今日歩いた距離保存済=true;
+		}catch(IOException|NumberFormatException e){
+			e.printStackTrace();
+		}
+		try{
+			BouyomiProxy.load(今日歩いた距離,"いちご丸確率.txt");
+			確率=Integer.parseInt(今日歩いた距離.get(0),16);
+			今日歩いた距離.remove(0);
 			保存済=true;
 		}catch(IOException|NumberFormatException e){
 			e.printStackTrace();
 		}
+		if(確率<=0)確率=初期確率;
 		DailyUpdate.Ragister("いちご丸",this);
 	}
 	@Override
@@ -75,6 +88,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				if(指定値>20000) {
 					tag.chatDefaultHost("指定ミスってない？("+指定値+"m)");
 				}else {
+					今日歩いた距離.add(String.valueOf((int)指定値));
 					int 元の距離=合計距離;
 					合計距離=(int) (合計距離-指定値);
 					StringBuilder システムメッセージ=new StringBuilder("いちご丸が");
@@ -91,6 +105,17 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			        DecimalFormat df = new DecimalFormat("#,##0.0");
 					投稿メッセージ.append(df.format(合計距離/1000D)).append("km)");
 					if(limit)投稿メッセージ.append("下限-2km");
+					int 距離=0;
+					for(String s:今日歩いた距離) {
+						距離+=Integer.parseInt(s);
+					}
+					投稿メッセージ.append("今日歩いた距離は").append(距離).append("mです。");
+					if(距離>ノルマ) {
+						投稿メッセージ.append("ノルマ達成です。確率は").append(初期確率/10f).append("%になります。");
+					}else {
+						投稿メッセージ.append("ノルマ達成出来てません。確率は").append((確率+25)/10f).append("%になります。");
+					}
+					今日歩いた距離保存済=false;
 					保存済=false;
 					tag.chatDefaultHost(投稿メッセージ.toString());
 				}
@@ -106,6 +131,21 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		        DecimalFormat df = new DecimalFormat("#,##0.0");
 				tag.chatDefaultHost(tag.con.mute?"/残り":"残り"+合計距離+"m("+df.format(合計距離/1000D)+"km)");
 			}catch(NumberFormatException nfe) {}
+		}
+		パラメータ=tag.getTag("今日歩いた距離");
+		if(パラメータ!=null) {
+			int 距離=0;
+			for(String s:今日歩いた距離) {
+				距離+=Integer.parseInt(s);
+			}
+			StringBuilder sb=new StringBuilder("いちご丸が今日歩いた距離は");
+			sb.append(距離).append("mです。");
+			if(距離>ノルマ) {
+				sb.append("ノルマ達成です。確率は").append(初期確率/10f).append("%になります。");
+			}else {
+				sb.append("ノルマ達成出来てません。確率は").append((確率+25)/10f).append("%になります。");
+			}
+			tag.chatDefaultHost(sb.toString());
 		}
 		パラメータ=tag.getTag("痩せろデブをもう一回引けるようにする");
 		if(パラメータ!=null&&tag.isAdmin()) {
@@ -148,27 +188,26 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		public void いちご丸が呼び出し() {
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
-			if(ランダム値<5)まさかこれを引くとは();
+			if(ランダム値<5)まさかこれを引くとは("0.5%");
 			else if(ランダム値<55)むしゃむしゃ("5%");
-			else if(ランダム値<305)行く("25%");
-			else やだ("63.5%");
+			else if(ランダム値<確率+55)行く(確率/10f+"%");
+			else やだ((1000-(確率+55))/10f+"%");
 		}
 		public void 呼び出し() {
 			今日引いた人達.add(tag.con.userid);
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
-			if(ランダム値<1)まさかこれを引くとは();
+			if(ランダム値<1)まさかこれを引くとは("0.1%");
 			else if(ランダム値<11)むしゃむしゃ("1%");
-			else if(ランダム値<261)行く("25%");
-			else やだ("72.7%");
+			else if(ランダム値<確率+11)行く(確率/10f+"%");
+			else やだ((1000-(確率+11))/10f+"%");
 			保存済=false;
 		}
-		private void まさかこれを引くとは(){
+		private void まさかこれを引くとは(String 確率メッセージ){
 			合計距離+=10000;//10km増える
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(Util.IDtoMention(tag.con.userid));
-			DecimalFormat df = new DecimalFormat("##0.0%");
-			sb.append(df.format(ランダム値+1)).append("のこれを引くとは凄い運だな\n10km行く");
+			sb.append(確率メッセージ).append("のこれを引くとは凄い運だな\n10km行く");
 			sb.append("(").append(ランダム値).append(")");
 			if(リミッター())sb.append("42.195km上限");
 			String s=sb.toString();
@@ -233,22 +272,51 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		shutdownHook();
 	}
 	public void shutdownHook() {
-		if(保存済)return;
-		@SuppressWarnings("unchecked")
-		ArrayList<String> コピー=(ArrayList<String>) 今日引いた人達.clone();
-		String 距離文字列=Integer.toHexString(合計距離);
-		コピー.add(0,距離文字列);
-		try{
-			BouyomiProxy.save(コピー,"いちご丸.txt");
-			保存済=true;
-		}catch(IOException e){
-			e.printStackTrace();
+		if(!保存済) {
+			@SuppressWarnings("unchecked")
+			ArrayList<String> コピー=(ArrayList<String>) 今日引いた人達.clone();
+			String 距離文字列=Integer.toHexString(合計距離);
+			コピー.add(0,距離文字列);
+			try{
+				BouyomiProxy.save(コピー,"いちご丸.txt");
+				保存済=true;
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+		}
+		if(!今日歩いた距離保存済) {
+			@SuppressWarnings("unchecked")
+			ArrayList<String> コピー=(ArrayList<String>) 今日歩いた距離.clone();
+			String 確率文字列=Integer.toHexString(確率);
+			コピー.add(0,確率文字列);
+			try{
+				BouyomiProxy.save(コピー,"いちご丸確率.txt");
+				今日歩いた距離保存済=true;
+			}catch(IOException e){
+				e.printStackTrace();
+			}
 		}
 	}
 	@Override
 	public void update(){
 		DailyUpdate.chat("痩せろデブが引けるようになりました");
 		今日引いた人達.clear();
+		int 距離=0;
+		for(String s:今日歩いた距離) {
+			距離+=Integer.parseInt(s);
+		}
+		今日歩いた距離.clear();
+		StringBuilder sb=new StringBuilder("いちご丸が今日歩いた距離は");
+		sb.append(距離).append("です。");
+		if(距離>ノルマ) {
+			確率=初期確率;
+			sb.append("ノルマ達成したので確率は").append(初期確率/10f).append("%になります。");
+		}else {
+			確率+=25;
+			sb.append("ノルマ達成出来なかったので確率は").append(確率/10f).append("%になります。");
+		}
+		DailyUpdate.chat(sb.toString());
 		保存済=false;
+		今日歩いた距離保存済=false;
 	}
 }
