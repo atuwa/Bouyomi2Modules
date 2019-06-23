@@ -64,6 +64,7 @@ public class Celeron implements IModule,IDailyUpdate,IAutoSave{
 	@Override
 	public void update() {
 		used.clear();
+		saved=false;
 		now=rundom.nextInt(10)+1;
 		DailyUpdate.chat("Celeron率が"+now+"%に変更されました");
 	}
