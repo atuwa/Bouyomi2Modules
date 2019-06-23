@@ -46,7 +46,7 @@ public class List implements IModule,ICountEvent{
 				if(user==null) {
 					sql="select * from count limit "+load+" offset "+(counts(null)-load);
 				}else {
-					sql="select * from count where id = "+user+" limit "+load+" offset "+(counts(user)-load);
+					sql="select * from count where id='"+user+"' limit "+load+" offset "+(counts(user)-load);
 				}
 				//String sql="select * from count order by time desc";
 				//System.out.println(sql);
