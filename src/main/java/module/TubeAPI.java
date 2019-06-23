@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -16,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -26,7 +24,6 @@ import java.util.regex.Pattern;
 
 import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
-import bouyomi.Counter;
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
 import bouyomi.DiscordBOT.DiscordAPI;
@@ -94,16 +91,6 @@ public class TubeAPI implements IModule,IAutoSave{
 		if(videoID.indexOf(' ')>=0||videoID.indexOf('　')>=0) {
 			videoID=videoID.trim();
 		}
-		/*
-		int index=videoID.indexOf('&');
-		String vid=videoID;
-		if(index>0)vid=videoID.substring(0,index);
-		if("v=grrX9elpi_A".equals(vid)||"v=15E9PJIZUwQ".equals(vid)) {
-			System.out.println("再生禁止="+vid);
-			if(bc!=null)bc.addTask.add("再生が禁止されています");
-			return false;
-		}
-		*/
 		try{
 			nowPlayVideo=true;
 			if(DefaultVol>=0)VOL=DefaultVol;
@@ -250,11 +237,9 @@ public class TubeAPI implements IModule,IAutoSave{
 		BufferedReader br=null;
 		try{
 			URL url=new URL("http://"+video_host+"/operation.html?"+op);
-			InputStream is=url.openStream();
-			InputStreamReader isr=new InputStreamReader(is);
+			InputStreamReader isr=new InputStreamReader(url.openStream());
 			br=new BufferedReader(isr);//1行ずつ取得する
-			String line=br.readLine();
-			return line;
+			return br.readLine();
 		}catch(IOException e){
 			e.printStackTrace();
 		}finally {
@@ -353,15 +338,6 @@ public class TubeAPI implements IModule,IAutoSave{
 		if(s==null||s.isEmpty()||s.equals(lastPlay))return null;
 		return s;
 	}
-	/*//新しいの。上手いこと動かない
-	public static String extract(String url,String name) {
-		Matcher match=Pattern.compile(name+"=[a-zA-Z0-9]").matcher(url);
-		if(match.find()) {
-			return match.group();
-		}else return null;
-	}
-	*/
-	//古いの。新しいのがうまく動かないからこっちを使う
 	public static String extract(String url,String name) {
 		if(url==null||url.isEmpty())return null;
 		StringBuilder sb=new StringBuilder(name);
@@ -487,9 +463,8 @@ public class TubeAPI implements IModule,IAutoSave{
 		if(tag!=null) {
 			String s=getTitle();
 			if(con.mute)System.out.println(s);
-			else if(s==null) {
-				TAG.chatDefaultHost("/動画タイトルが取得できませんでした");
-			}else TAG.chatDefaultHost("/動画タイトル："+s);
+			else if(s==null)TAG.chatDefaultHost("/動画タイトルが取得できませんでした");
+			else TAG.chatDefaultHost("/動画タイトル："+s);
 		}
 		tag=TAG.getTag("動画URL");
 		if(tag==null)tag=TAG.getTag("動画ＵＲＬ");//全角英文字
@@ -614,7 +589,6 @@ public class TubeAPI implements IModule,IAutoSave{
 				if(con.mute) {
 					//DiscordAPI.chatDefaultHost("/"+em);
 				}else if(!TAG.chatDefaultHost(em))addTask.add(em);
-				//Discordに投稿出来た時はその投稿されたメッセージを読むから読み上げメッセージは空白
 			}else {
 				try{
 					int vol=Integer.parseInt(tag);//要求された音量
@@ -652,71 +626,6 @@ public class TubeAPI implements IModule,IAutoSave{
 				TAG.con.addTask.add("パラメータが間違ってます");
 			}
 		}
-		if(DiscordBOT.DefaultHost!=null) {
-			tag=TAG.getTag("最頻再生動画");
-			if(tag!=null) {
-				String s=most(0);
-				if(s==null) {
-					if(!con.mute)TAG.chatDefaultHost("取得失敗");
-				}else {
-					String id=s.substring(0,s.indexOf('('));
-					s+="\n"+IDtoURL(id);
-					System.out.println(s);
-					if(!con.mute)TAG.chatDefaultHost("/"+s);
-				}
-			}
-			tag=TAG.getTag("最頻再生者");
-			if(tag!=null) {
-				String s;
-				if(tag.equals("ID")) {
-					s=most(3);
-					s="ID="+s+"Nick="+Counter.getUserName(s);
-				}else s=most(2);
-				System.out.println(s);
-				if(con.mute);
-				else if(s==null)TAG.chatDefaultHost("取得失敗");
-				else TAG.chatDefaultHost("/"+s);
-			}
-		}
-	}
-	private String most(int index){
-		if(index<0)return null;
-		try {
-			FileInputStream fis=new FileInputStream(new File(HistoryFile));
-			InputStreamReader isr=new InputStreamReader(fis,StandardCharsets.UTF_8);
-			BufferedReader br=new BufferedReader(isr);
-			class Counter{
-				public int count=1;
-			}
-			HashMap<String, Counter> co=new HashMap<String,Counter>();
-			try {
-				while(br.ready()) {
-					String line=br.readLine();
-					if(line==null)break;
-					String[] arr=line.split("\t");
-					if(index>=arr.length)continue;
-					String key=arr[index];
-					Counter v=co.get(key);
-					if(v==null)co.put(key,new Counter());
-					else v.count++;
-				}
-				String most=null;
-				int most_i=0;
-				for(String s:co.keySet()) {
-					Counter v=co.get(s);
-					if(v.count>most_i) {
-						most_i=v.count;
-						most=s;
-					}
-				}
-				return most+"("+most_i+"回)";
-			}finally{
-				br.close();
-			}
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 	@Override
 	public void autoSave() throws IOException{
