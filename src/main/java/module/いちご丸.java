@@ -263,12 +263,13 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		private void 変化メッセージ(StringBuilder 書き込み先) {
 			long 増えた分=合計距離-古い合計距離;
 			if(増えた分==0)return;
-			書き込み先.append("残り").append(古い合計距離);
+	        DecimalFormat df = new DecimalFormat("#,##0");
+			書き込み先.append("残り").append(df.format(古い合計距離));
 			if(増えた分<0)書き込み先.append(増えた分);
 			else 書き込み先.append("+").append(増えた分);
-			書き込み先.append("=").append(合計距離).append("m(");
-	        DecimalFormat df = new DecimalFormat("#,##0.0");
-	        書き込み先.append(df.format(合計距離/1000D)).append("km)");
+			書き込み先.append("=").append(df.format(合計距離)).append("m(");
+	        DecimalFormat df2 = new DecimalFormat("#,##0.0");
+	        書き込み先.append(df2.format(合計距離/1000D)).append("km)");
 		}
 	}
 	protected boolean リミッター() {
