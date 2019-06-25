@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,16 +28,19 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	private SecureRandom ランダム生成源=new SecureRandom();
 	private long 合計距離;
 	private boolean 保存済;
-	private ArrayList<String> 今日引いた人達=new ArrayList<String>();
-	private static int 初期確率=300,ノルマ=1500;
+	private HashMap<String,String> 今日引いた人達=new HashMap<String,String>();
+	private static int 初期確率=150,ノルマ=4000;
 	private int 確率;
 	private ArrayList<String> 今日歩いた距離=new ArrayList<String>();
 	private boolean 今日歩いた距離保存済;
+	private int 一日に引ける回数=1;//回数制限
+	private static String 本人ID="534060228099178537";
 	public いちご丸(){
 		try{
 			BouyomiProxy.load(今日引いた人達,"いちご丸.txt");
-			合計距離=Long.parseLong(今日引いた人達.get(0),16);
-			今日引いた人達.remove(0);
+			合計距離=Long.parseLong(今日引いた人達.get("合計距離"),16);
+			一日に引ける回数=Integer.parseInt(今日引いた人達.get("一日に引ける回数"));
+			今日引いた人達.remove("合計距離");
 			今日歩いた距離保存済=true;
 		}catch(IOException|NumberFormatException e){
 			e.printStackTrace();
@@ -52,15 +56,19 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		if(確率<=0)確率=初期確率;
 		DailyUpdate.Ragister("いちご丸",this);
 	}
+	private boolean 何回でも引けるか(Tag tag) {
+		return 本人ID.equals(tag.con.userid)||tag.isAdmin();
+	}
 	@Override
 	public void call(Tag tag){
 		if(tag.con.text.equals("痩せろデブ")) {
-			if("534060228099178537".equals(tag.con.userid)||tag.isAdmin()) {
+			int 引いた回数=Integer.parseInt(今日引いた人達.getOrDefault(tag.con.userid,"0"));
+			if(何回でも引けるか(tag)) {
 				抽選 t=new 抽選(tag);
-				if("534060228099178537".equals(tag.con.userid))t.いちご丸が呼び出し();
+				if(本人ID.equals(tag.con.userid))t.いちご丸が呼び出し();
 				else t.呼び出し();
-			}else if(今日引いた人達.contains(tag.con.userid)) {
-				tag.chatDefaultHost("今日はもう引いたでしょ/*"+tag.con.user+"さん");
+			}else if(引いた回数>=一日に引ける回数) {//TODO 回数判定
+				tag.chatDefaultHost("今日はもう制限まで引いたでしょ/*"+tag.con.user+"さん");
 			}else new 抽選(tag).呼び出し();
 		}
 		if(tag.con.text.equals("今何メートル")||tag.con.text.toLowerCase().equals("今何m")||
@@ -132,6 +140,22 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				tag.chatDefaultHost(tag.con.mute?"/残り":"残り"+合計距離+"m("+df.format(合計距離/1000D)+"km)");
 			}catch(NumberFormatException nfe) {}
 		}
+		パラメータ=tag.getTag("いちご引ける回数");
+		if(パラメータ!=null) {
+			if(パラメータ.isEmpty()) {
+				int 引いた回数=Integer.parseInt(今日引いた人達.getOrDefault(tag.con.userid,"0"));
+				if(何回でも引けるか(tag)) {
+					tag.chatDefaultHost("/1日"+一日に引ける回数+"回です("+tag.con.user+"さんは何回でも引けます。今日引いた回数は"+引いた回数+"回です)");
+				}else {
+					int 引ける回数=一日に引ける回数-引いた回数;
+					tag.chatDefaultHost("/1日"+一日に引ける回数+"回です("+tag.con.user+"さんはあと"+引ける回数+"回です)");
+				}
+			}else if(tag.isAdmin())	try{
+				一日に引ける回数=Integer.parseInt(パラメータ);
+				tag.chatDefaultHost(tag.con.mute?"/":""+"1日に引ける回数を"+一日に引ける回数+"回に変更しました");
+				保存済=false;
+			}catch(NumberFormatException nfe) {}
+		}
 		パラメータ=tag.getTag("今日歩いた距離");
 		if(パラメータ!=null) {
 			int 距離=0;
@@ -148,12 +172,12 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			tag.chatDefaultHost(sb.toString());
 		}
 		パラメータ=tag.getTag("痩せろデブをもう一回引けるようにする");
-		if(パラメータ!=null&&("534060228099178537".equals(tag.con.userid)||tag.isAdmin())) {
+		if(パラメータ!=null&&(本人ID.equals(tag.con.userid)||tag.isAdmin())) {
 			if(パラメータ.isEmpty()) {
 				tag.chatDefaultHost(tag.con.mute?"/":""+今日引いた人達.size()+"件の引いた人リストを消去しました");
 				今日引いた人達.clear();
-			}else if(今日引いた人達.contains(パラメータ)) {
-				if(今日引いた人達.remove(パラメータ)) {
+			}else if(今日引いた人達.containsKey(パラメータ)) {
+				if(今日引いた人達.remove(パラメータ)!=null) {
 					tag.chatDefaultHost(tag.con.mute?"/":""+Counter.getUserName(パラメータ)+"を引いた人リストから消去しました");
 				}
 			}
@@ -186,6 +210,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		private long 古い合計距離=合計距離;
 		public 抽選(Tag tag){
 			this.tag=tag;
+			String 今までに引いた回数=今日引いた人達.get(tag.con.userid);
+			if(今までに引いた回数==null||今までに引いた回数.isEmpty())今までに引いた回数="1";
+			else 今までに引いた回数=Integer.toString(Integer.parseInt(今までに引いた回数)+1);
+			今日引いた人達.put(tag.con.userid,今までに引いた回数);
 		}
 		public void いちご丸が呼び出し() {
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
@@ -195,7 +223,6 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			else やだ((1000-(確率+55))/10f+"%");
 		}
 		public void 呼び出し() {
-			今日引いた人達.add(tag.con.userid);
 			ランダム値=ランダム生成源.nextInt(1000);//0～1000のランダムを生成
 			if(ランダム値<1)まさかこれを引くとは("0.1%");
 			else if(ランダム値<11)むしゃむしゃ("1%");
@@ -204,8 +231,9 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			保存済=false;
 		}
 		private void まさかこれを引くとは(String 確率メッセージ){
-			int 増える量=10000;
-			合計距離+=増える量;//10km増える
+			今日引いた人達.put(tag.con.userid,String.valueOf(一日に引ける回数));
+			int 増える量=15000;//15km増える
+			合計距離+=増える量;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(Util.IDtoMention(tag.con.userid));
@@ -219,7 +247,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		private void むしゃむしゃ(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=ランダム生成源.nextInt(350)+50;
+			int 距離=ランダム生成源.nextInt(450)+50;
 			合計距離=合計距離-距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
@@ -233,7 +261,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		private void 行く(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=ランダム生成源.nextInt(650)+350;
+			int 距離=ランダム生成源.nextInt(550)+250;
 			合計距離=合計距離+距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
@@ -258,6 +286,13 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("/*");
 			変化メッセージ(sb);
 			sb.append(" 抽選者：").append(tag.con.user);
+			int 引いた回数=Integer.parseInt(今日引いた人達.get(tag.con.userid));
+			if(何回でも引けるか(tag)) {
+				sb.append("(").append(引いた回数).append("回目)");
+			}else {
+				int 引ける回数=一日に引ける回数-引いた回数;
+				sb.append("(あと").append(引ける回数).append("回)");
+			}
 			sb.append(" 確率").append(確率メッセージ);
 		}
 		private void 変化メッセージ(StringBuilder 書き込み先) {
@@ -291,12 +326,11 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	}
 	public void shutdownHook() {
 		if(!保存済) {
-			@SuppressWarnings("unchecked")
-			ArrayList<String> コピー=(ArrayList<String>) 今日引いた人達.clone();
 			String 距離文字列=Long.toHexString(合計距離);
-			コピー.add(0,距離文字列);
+			今日引いた人達.put("合計距離",距離文字列);
+			今日引いた人達.put("一日に引ける回数",String.valueOf(一日に引ける回数));
 			try{
-				BouyomiProxy.save(コピー,"いちご丸.txt");
+				BouyomiProxy.save(今日引いた人達,"いちご丸.txt");
 				保存済=true;
 			}catch(IOException e){
 				e.printStackTrace();
