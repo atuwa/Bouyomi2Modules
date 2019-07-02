@@ -38,7 +38,7 @@ public class TubeAPI implements IModule,IAutoSave{
 	public static String video_host=null;
 	public static int VOL=30,DefaultVol=-1;
 	public static String lastPlay,lastPlayUser,lastPlayUserId,lastPlayGuildId,lastPlayChannelId;
-	public static int maxHistory=32;//32個履歴を保持する
+	public static int maxHistory=64;//32個履歴を保持する
 	/**履歴が入ってるリスト*/
 	public static ArrayList<String> playHistory=new ArrayList<String>();
 	static String HistoryFile="play.txt";

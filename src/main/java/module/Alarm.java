@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 
 import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
-import bouyomi.Counter;
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
@@ -56,7 +55,7 @@ public class Alarm implements IModule,IAutoSave{
 			for(Entry<String, String> es:map.entrySet()) {
 				sb.append("\n");
 				long l=Long.parseLong(es.getValue());
-				String s0=Counter.getUserName(es.getKey().split(",")[0]);
+				String s0=tag.getUserName(es.getKey().split(",")[0]);
 				s0+=sdf.format(new Date(l));
 				sb.append(s0);
 			}
@@ -71,7 +70,7 @@ public class Alarm implements IModule,IAutoSave{
 		String name=con.con.user;
 		if(id==null||id.isEmpty())id=con.con.userid;
 		else if(con.con.userid.equals(id));
-		else name=Counter.getUserName(id);
+		else name=con.getUserName(id);
 		String v=map.get(makeKey(con));
 		if(v==null)con.chatDefaultHost("/"+name+"のアラームは設定されていません");
 		else{
@@ -117,7 +116,7 @@ public class Alarm implements IModule,IAutoSave{
 		private String id;
 		public String gid,cid;
 		public AlarmThread2(long l,String s) {
-			super("アラーム"+Counter.getUserName(s));
+			super("アラーム"+s);
 			sleep=l;
 			id=s;
 		}
@@ -161,7 +160,9 @@ public class Alarm implements IModule,IAutoSave{
 			if(l-now<sleep) {
 				String[] k=es.getKey().split(",");
 				//System.out.println("スレッド起動");
-				AlarmThread2 as=new AlarmThread2(l-now, k[0]);
+				String name=k[0];
+				if(DiscordBOT.DefaultHost!=null)name=DiscordBOT.DefaultHost.getNick(k[1],name);
+				AlarmThread2 as=new AlarmThread2(l-now, name);
 				as.gid=k[1];
 				as.cid=k[2];
 				as.start();

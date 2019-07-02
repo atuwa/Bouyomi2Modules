@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 import bouyomi.BouyomiConection;
 import bouyomi.BouyomiProxy;
-import bouyomi.Counter;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
 import bouyomi.IAutoSave;
@@ -95,7 +94,7 @@ public class Kaikoga implements IModule,IAutoSave{
 		if(str!=null){
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
-				tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"の要求としてボロンさせます");
+				tag.chatDefaultHost("了解。"+tag.getUserName(str)+"の要求としてボロンさせます");
 				hit(con,str);
 			}else con.addTask.add("権限がありません");
 		}
@@ -104,8 +103,8 @@ public class Kaikoga implements IModule,IAutoSave{
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
 				String old=kaikogaDB.remove(str);
-				if(old!=null) tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを抹消します");
-				else tag.chatDefaultHost(Counter.getUserName(str)+"のボロンを抹消出来ませんでした");
+				if(old!=null) tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを抹消します");
+				else tag.chatDefaultHost(tag.getUserName(str)+"のボロンを抹消出来ませんでした");
 			}else con.addTask.add("権限がありません");
 		}
 		str=tag.getTag("ボロン減算");
@@ -123,10 +122,10 @@ public class Kaikoga implements IModule,IAutoSave{
 				}
 				if("0".equals(n)){
 					kaikogaDB.remove(str);
-					tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを抹消します");
+					tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを抹消します");
 				}else{
 					kaikogaDB.put(str,n);
-					tag.chatDefaultHost("了解。"+Counter.getUserName(str)+"のボロンを"+n+"にさせます");
+					tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを"+n+"にさせます");
 				}
 			}else con.addTask.add("権限がありません");
 		}
@@ -188,7 +187,7 @@ public class Kaikoga implements IModule,IAutoSave{
 		}
 		String t=tag.getTag("カイコガランキング");
 		if(t!=null||"カイコガランキング".equals(con.text)){
-			String s=rank(t);
+			String s=new KaikogaRank(tag,t).rank();
 			if(con.mute)System.out.println(s);
 			else tag.chatDefaultHost(s);
 		}
@@ -231,29 +230,51 @@ public class Kaikoga implements IModule,IAutoSave{
 		}
 		kaikogaDB.put(id,n);
 	}
-	public String rank(String s){
-		Comparator<Value<String,String>> c0=new Comparator<Value<String,String>>(){
-			@Override
-			public int compare(Value<String, String> o1,Value<String, String> o2){
-				int n1=Integer.parseInt(o2.getValue());
-				int n2=Integer.parseInt(o1.getValue());
-				return Integer.compare(n1,n2);
-			}
-		};
-		kaikogaDB.rawList().sort(c0);
-		long all=0;
-		for(Value<String, String> v:kaikogaDB.rawList()){
-			try{
-				all+=Integer.parseInt(v.getValue());
-			}catch(NumberFormatException nfe){
-
-			}
+	private class KaikogaRank{
+		private Tag tag;
+		private String parm;
+		private long all=0;
+		private DecimalFormat fo=new DecimalFormat("##0.00%");
+		private StringBuilder sb=new StringBuilder("ボロンした合計");
+		public KaikogaRank(Tag tag,String s){
+			this.tag=tag;
+			parm=s;
 		}
-		if(all<=0) return "ボロンした回数合計0回";
-		DecimalFormat fo=new DecimalFormat("##0.00%");
-		StringBuilder sb=new StringBuilder("ボロンした合計");
-		sb.append(all).append("回/*\n");
-		if(s!=null&&!s.isEmpty()) {
+		private void com() {
+			Comparator<Value<String,String>> c0=new Comparator<Value<String,String>>(){
+				@Override
+				public int compare(Value<String, String> o1,Value<String, String> o2){
+					int n1=Integer.parseInt(o2.getValue());
+					int n2=Integer.parseInt(o1.getValue());
+					return Integer.compare(n1,n2);
+				}
+			};
+			kaikogaDB.rawList().sort(c0);
+			for(Value<String, String> v:kaikogaDB.rawList()){
+				try{
+					all+=Integer.parseInt(v.getValue());
+				}catch(NumberFormatException nfe){
+
+				}
+			}
+			sb.append(all).append("回/*\n");
+		}
+		public String rank(){
+			if(parm!=null&&!parm.isEmpty())return userRank();
+			return ALLrank();
+		}
+		public String ALLrank(){
+			com();
+			if(all<=0) return "ボロンした回数合計0回";
+			for(int index=0;index<Math.min(5,kaikogaDB.size());index++){
+				Value<String, String> v=kaikogaDB.rawList().get(index);
+				appendUser(v.getKey(),v.getValue());
+			}
+			return sb.toString();
+		}
+		public String userRank(){
+			com();
+			if(all<=0) return "ボロンした回数合計0回";
 			String v=null;
 			int i=-1;
 			int rank=0;
@@ -262,33 +283,28 @@ public class Kaikoga implements IModule,IAutoSave{
 			for(int in=0;in<kaikogaDB.rawList().size();in++) {
 				Value<String, String> va=kaikogaDB.rawList().get(in);
 				if(prev!=null&&!va.getValue().equals(prev.getValue()))rank++;
-				if(kaikogaDB.get(s)!=null&&kaikogaDB.get(s).equals(va.getValue()))count++;
-				if(va.equalsKey(s)){
+				if(kaikogaDB.get(parm)!=null&&kaikogaDB.get(parm).equals(va.getValue()))count++;
+				if(va.equalsKey(parm)){
 					v=va.getValue();
 					i=rank;
 				}
 				//if(i>=0&&i!=rank)break;
 				prev=va;
 			}
-			if(v!=null)appendUser(sb,fo,all,s,v);
+			if(v!=null)appendUser(parm,v);
 			if(i<0)sb.append("ランキング外です");
 			else sb.append(i+1).append("位です(").append(count).append("人)");
 			return sb.toString();
 		}
-		for(int index=0;index<Math.min(5,kaikogaDB.size());index++){
-			Value<String, String> v=kaikogaDB.rawList().get(index);
-			appendUser(sb,fo,all,v.getKey(),v.getValue());
-		}
-		return sb.toString();
-	}
-	private void appendUser(StringBuilder sb,DecimalFormat fo,long all,String id,String value) {
-		String name=Counter.getUserName(id);
-		sb.append(name).append(" が").append(value).append("回");
-		try{
-			double i=Integer.parseInt(value);
-			sb.append("(").append(fo.format(i/all)).append(")\n");
-		}catch(NumberFormatException nfe){
-			sb.append("\n");
+		private void appendUser(String id,String value) {
+			String name=tag.getUserName(id);
+			sb.append(name).append(" が").append(value).append("回");
+			try{
+				double i=Integer.parseInt(value);
+				sb.append("(").append(fo.format(i/all)).append(")\n");
+			}catch(NumberFormatException nfe){
+				sb.append("\n");
+			}
 		}
 	}
 	@Override

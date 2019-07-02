@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import bouyomi.BouyomiProxy;
-import bouyomi.Counter;
 import bouyomi.DiscordBOT;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
@@ -30,7 +29,7 @@ public class Memo implements IModule,IAutoSave{
 			if(del!=null) {
 				data.put(del,"メモは管理者により抹消されました");
 				saved=false;
-				tag.chatDefaultHost(Counter.getUserName(del)+"のメモを抹消しました");
+				tag.chatDefaultHost(tag.getUserName(del)+"のメモを抹消しました");
 			}
 		}
 		String get=tag.getTag("メモ取得");
@@ -54,7 +53,7 @@ public class Memo implements IModule,IAutoSave{
 		}
 	}
 	private void getMemo(Tag tag,String u){
-		String name=Counter.getUserName(u);
+		String name=tag.getUserName(u);
 		if(name==null)return;
 		StringBuilder sb=new StringBuilder(name);
 		sb.append("(").append(u).append(")");
