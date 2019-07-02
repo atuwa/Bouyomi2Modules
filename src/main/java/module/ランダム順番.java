@@ -28,16 +28,22 @@ public class ランダム順番 implements IModule{
 			sb.append("あたり ").append(strings);
 		}else {
 			char[] chars=strings.toCharArray();
+			char[] chars2=new char[chars.length];
 			String s=strings;
 			while(true) {
 				if(!s.equals(strings))break;
+				/*
 				for (int i=chars.length; i>1; i--) {
 					int j=rundom.nextInt(i);
 					char tmp = chars[i-1];
 					chars[i-1] = chars[j];
 					chars[j] = tmp;
 				}
-				s=new String(chars);
+				 */
+				for (int i=0;i<chars.length;i++) {
+					chars2[i]=chars[rundom.nextInt(chars.length)];
+				}
+				s=new String(chars2);
 			}
 			sb.append("はずれ ").append(s);
 		}
