@@ -157,6 +157,15 @@ public class Sample implements IModule{
 			}
 			if(sb.length()>1)tag.chatDefaultHost(sb.toString());
 		}
+		org=tag.getTag("各種ID取得");
+		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
+			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+			StringBuilder sb=new StringBuilder("/");
+			sb.append("サーバID=").append(bc.server.getId()).append("\n");
+			sb.append("チャンネルID=").append(bc.channel.getId()).append("\n");
+			sb.append("ユーザID=").append(bc.userid).append("\n");
+			tag.chatDefaultHost(sb.toString());
+		}
 	}
 	private void icon(BouyomiBOTConection bc,String url) {
 		ByteArrayOutputStream os=new ByteArrayOutputStream();
