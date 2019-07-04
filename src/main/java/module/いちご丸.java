@@ -263,7 +263,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(Util.IDtoMention(tag.con.userid));
-			sb.append(確率メッセージ).append("のこれを引くとは凄い運だな\n10km行く");
+			sb.append(確率メッセージ).append("のこれを引くとは凄い運だな\n15km行く");
 			sb.append("(").append(ランダム値).append(")");
 			if(リミッター())sb.append("42.195km上限");
 			定型文(sb,確率メッセージ);
