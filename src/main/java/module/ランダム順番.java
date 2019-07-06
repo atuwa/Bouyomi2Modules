@@ -19,6 +19,7 @@ public class ランダム順番 implements IModule{
 		if(tag.con.text.equals("TAKESHI"))call(tag,"TAKESHI");
 		if(tag.con.text.equals("TAKESI"))call(tag,"TAKESI");
 		if(tag.con.text.equals("ryosios"))call(tag,"ryosios");
+		if(tag.con.text.equals("shirokuro"))call(tag,"shirokuro");
 	}
 	public void call(Tag tag,String strings){
 		tag.con.text="";
