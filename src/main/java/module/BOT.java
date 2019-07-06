@@ -74,18 +74,18 @@ public class BOT implements IModule,IAutoSave{
 			String val=e.getValue();
 			if(pm) {
 				if(tag.con.text.indexOf(key)>=0) {//読み上げテキストにキーが含まれている時
-					if(key.equals(LastMatch))MatchCount++;
-					else MatchCount=0;
-					if(MatchCount>5)return true;
+					//if(key.equals(LastMatch))MatchCount++;
+					//else MatchCount=0;
+					//if(MatchCount>5)return true;
 					System.out.println("BOT応答キー =部分一致："+key);//ログに残す
 					if(!tag.chatDefaultHost(val))tag.con.addTask.add(val);//追加で言う
 					LastMatch=key;
 					return true;
 				}
 			}else if(tag.con.text.equals(key)) {//読み上げテキストがキーに一致した時
-				if(key.equals(LastMatch))MatchCount++;
-				else MatchCount=0;
-				if(MatchCount>5)return true;
+				//if(key.equals(LastMatch))MatchCount++;
+				//else MatchCount=0;
+				//if(MatchCount>5)return true;
 				System.out.println("BOT応答キー ="+key);//ログに残す
 				if(!tag.chatDefaultHost(val))tag.con.addTask.add(val);//追加で言う
 				LastMatch=key;
