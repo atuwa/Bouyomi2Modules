@@ -25,7 +25,8 @@ public class 餅 implements IDailyUpdate,IModule{
 		if(tag.getGuild()!=null&&!対象サーバID.equals(tag.getGuild().getId()))return;
 		今の名前=tag.getUserName(餅ID);
 		String s=tag.getTag("餅君名前更新");
-		if(s!=null&&(tag.isAdmin()||餅ID.equals(tag.con.userid))) {
+		//if(s!=null&&(tag.isAdmin()||餅ID.equals(tag.con.userid))) {
+		if(s!=null) {
 			tag.chatDefaultHost(ランダム書き換え());
 		}
 	}
