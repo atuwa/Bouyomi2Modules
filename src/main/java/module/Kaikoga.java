@@ -157,7 +157,8 @@ public class Kaikoga implements IModule,IAutoSave{
 			tag.chatDefaultHost(sb.toString());
 		}
 		if(con.text.equals("グレートカイコガ２")||con.text.equals("グレートカイコガ2")
-				||con.text.equals("グレートカイコガ")||con.text.equals("greatKaikoga")||con.text.equals("GreatKaikoga")){
+				||con.text.equals("グレートカイコガ")||con.text.equals("greatKaikoga")||con.text.equals("GreatKaikoga")||
+				con.text.equals("グレコガ")){
 			int r=rundom.nextInt(1000)+1;//当選率可変
 			int k=kakuritu+upKaikoga;
 			if(up>20)k+=20;
