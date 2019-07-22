@@ -61,7 +61,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	}
 	@Override
 	public void call(Tag tag){
-		if(tag.con.text.equals("痩せろデブ")) {
+		if(tag.con.text.equals("痩せろデブ")||tag.con.text.equals("痩せデブ")) {
 			int 引いた回数=Integer.parseInt(今日引いた人達.getOrDefault(tag.con.userid,"0"));
 			if(何回でも引けるか(tag)) {
 				抽選 t=new 抽選(tag);
@@ -335,8 +335,8 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 	}
 	protected boolean リミッター() {
-		int 最大値=42195;//TODO 上限42.195km
-		int 最小値=-2*1000;//TODO 下限-2km
+		int 最大値=84390;//TODO 上限84.39km
+		int 最小値=-42195;//TODO 下限-42.195km
 		if(合計距離>最大値) {
 			合計距離=最大値;
 			return true;
