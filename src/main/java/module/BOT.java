@@ -19,7 +19,9 @@ public class BOT implements IModule,IAutoSave{
 	//Google翻訳から持ってきた変数名
 	public static HashMap<String,String> PartialMatchBOT=new HashMap<String,String>();
 	public static String BOTpath="BOT.dic";
+	@SuppressWarnings("unused")
 	private static int MatchCount;
+	@SuppressWarnings("unused")
 	private static String LastMatch;
 	public static void printList(final StringBuilder sb){
 		BOT.forEach(new BiConsumer<String,String>(){
