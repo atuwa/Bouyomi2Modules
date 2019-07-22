@@ -20,6 +20,8 @@ public class Alarm implements IModule,IAutoSave{
 	private final long sleep=5*60*1000;
 	/**k=id	v=時刻*/
 	private HashMap<String,String> map=new HashMap<String,String>();
+	/**k=id	v=message*/
+	private HashMap<String,String> messages=new HashMap<String,String>();
 	private boolean savedmap;
 	public Alarm() {
 		try{
@@ -34,7 +36,9 @@ public class Alarm implements IModule,IAutoSave{
 	public void call(Tag tag){
 		String s=tag.getTag("アラーム取り消し","アラーム取消","アラーム取り消","アラーム取消し");
 		if(s!=null) {
-			String v=map.remove(makeKey(tag));
+			String key=makeKey(tag);
+			messages.remove(key);
+			String v=map.remove(key);
 			if(v==null)tag.chatDefaultHost(tag.con.user+"のアラームは設定されていません");
 			else tag.chatDefaultHost(tag.con.user+"のアラームを取り消しました");
 		}
@@ -71,12 +75,16 @@ public class Alarm implements IModule,IAutoSave{
 		if(id==null||id.isEmpty())id=con.con.userid;
 		else if(con.con.userid.equals(id));
 		else name=con.getUserName(id);
-		String v=map.get(makeKey(con));
+		String key=makeKey(con);
+		String v=map.get(key);
 		if(v==null)con.chatDefaultHost("/"+name+"のアラームは設定されていません");
 		else{
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日HH時mm分");
 			String l=sdf.format(new Date(Long.parseLong(v)));
-			con.chatDefaultHost("/"+name+"のアラームは"+l+"に設定されています");
+			String m=messages.get(key);
+			if(m==null)m="";
+			else m="。メッセージ："+m;
+			con.chatDefaultHost("/"+name+"のアラームは"+l+"に設定されています"+m);
 		}
 	}
 	private void main(String s, Tag tag) {
@@ -99,11 +107,20 @@ public class Alarm implements IModule,IAutoSave{
 			if(h==null)return;
 			String m=f.a(tag.con, "分");
 			if(m==null)return;
+			String message=null;
+			if(f.s!=null&&!f.s.isEmpty())message=f.s;
 			Date date = sdf.parse(sdf0.format(new Date(nd))+h+m);
 			//date.getTime(),sdf.format(date), con.userid
 			System.out.println("時間指定は正常に処理されました\n結果="+sdf.format(date));
-			tag.chatDefaultHost("/"+sdf.format(date)+"にメンションします");
-			map.put(makeKey(tag),Long.toString(date.getTime()));
+			StringBuilder sb=new StringBuilder("/");
+			sb.append(sdf.format(date)).append("に");
+			//if(message!=null)sb.append(" ").append(message).append(" を");
+			sb.append("メンションします");
+			tag.chatDefaultHost(sb.toString());
+			String key=makeKey(tag);
+			//System.out.println("登録ID="+key);
+			if(message!=null)messages.put(key,message);
+			map.put(key,Long.toString(date.getTime()));
 			call();
 			savedmap=false;
 		}catch(Exception e){
@@ -115,8 +132,8 @@ public class Alarm implements IModule,IAutoSave{
 		private long sleep;
 		private String id;
 		public String gid,cid;
-		public AlarmThread2(long l,String s) {
-			super("アラーム"+s);
+		public AlarmThread2(long l,String s,String nick) {
+			super("アラーム"+nick);
 			sleep=l;
 			id=s;
 		}
@@ -124,8 +141,16 @@ public class Alarm implements IModule,IAutoSave{
 		public void run() {
 			try{
 				if(sleep>0)Thread.sleep(sleep);
-				if(map.containsKey(id+","+gid+","+cid))DiscordBOT.DefaultHost.send(gid,cid,Util.IDtoMention(id)+"アラーム");
-				map.remove(id+","+gid+","+cid);
+				String key=id+","+gid+","+cid;
+				if(map.containsKey(key)) {
+					StringBuilder sb=new StringBuilder(Util.IDtoMention(id));
+					sb.append("アラーム");
+					String mes=messages.get(key);
+					if(mes!=null)sb.append("\n").append(mes);
+					DiscordBOT.DefaultHost.send(gid,cid,sb.toString());
+				}
+				map.remove(key);
+				messages.remove(key);
 				savedmap=false;
 				System.out.println(getName()+"終了");
 			}catch(InterruptedException e){
@@ -161,8 +186,10 @@ public class Alarm implements IModule,IAutoSave{
 				String[] k=es.getKey().split(",");
 				//System.out.println("スレッド起動");
 				String name=k[0];
-				if(DiscordBOT.DefaultHost!=null)name=DiscordBOT.DefaultHost.getNick(k[1],name);
-				AlarmThread2 as=new AlarmThread2(l-now, name);
+				String nick=name;
+				if(DiscordBOT.DefaultHost!=null)nick=DiscordBOT.DefaultHost.getNick(k[1],name);
+				if(nick==null)nick=name;
+				AlarmThread2 as=new AlarmThread2(l-now, name,nick);
 				as.gid=k[1];
 				as.cid=k[2];
 				as.start();
@@ -170,7 +197,7 @@ public class Alarm implements IModule,IAutoSave{
 		}
 	}
 	private class Format {
-		private String s;
+		public String s;
 		public Format(String t) {
 			s=t;
 		}
@@ -201,6 +228,7 @@ public class Alarm implements IModule,IAutoSave{
 	public void shutdownHook() {
 		try{
 			BouyomiProxy.save(map,"Alarm.txt");
+			BouyomiProxy.save(messages,"AlarmMessages.txt");
 			savedmap=true;
 		}catch(IOException e){
 			e.printStackTrace();
