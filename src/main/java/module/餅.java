@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.entities.Member;
 
 public class 餅 implements IDailyUpdate,IModule{
 
-	private String[] 候補= {"餅","汚","焼","臭","腐","喰","妖","便"};
+	private String[] 候補= {"餅","汚","焼","臭","腐","喰","妖","便","醜","悪","性","危"};
 	private String 餅ID="306490014009917442";
 	private String 対象サーバID="566942640986390528";
 	private String 対象チャンネルID="566943792033169418";
@@ -36,6 +36,9 @@ public class 餅 implements IDailyUpdate,IModule{
 		DiscordBOT.DefaultHost.send(対象サーバID,対象チャンネルID,ランダム書き換え());
 	}
 	private String ランダム書き換え() {
+		if(今の名前==null||今の名前.equals("null")) {
+			今の名前=DiscordBOT.DefaultHost.getNick(対象サーバID,餅ID);
+		}
 		int rnd=new SecureRandom().nextInt(候補.length);
 		名前更新(候補[rnd]);
 		StringBuilder sb=new StringBuilder("餅君の名前を");
