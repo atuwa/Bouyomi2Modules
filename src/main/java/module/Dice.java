@@ -39,7 +39,7 @@ public class Dice implements IModule{
 				if(j<80) {
 					rnd=new StringBuilder("[");
 					for(int i=0;i<j;i++) {
-						int r=rg.nextInt(k);
+						int r=rg.nextInt(k)+1;
 						result+=r;
 						if(i>0)rnd.append(",");
 						rnd.append(r);
@@ -47,7 +47,7 @@ public class Dice implements IModule{
 					rnd.append("]");
 				}else {
 					for(int i=0;i<j;i++) {
-						result+=rg.nextInt(k);
+						result+=rg.nextInt(k)+1;
 					}
 				}
 				mes.append(" -> ");
