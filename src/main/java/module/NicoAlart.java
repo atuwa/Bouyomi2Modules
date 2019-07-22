@@ -225,6 +225,7 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 			}catch(IOException e1){
 				e1.printStackTrace();
 			}
+			System.gc();
 			try{
 				Thread.sleep(5*60*1000);
 			}catch(InterruptedException e){
