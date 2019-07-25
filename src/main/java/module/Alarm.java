@@ -89,27 +89,30 @@ public class Alarm implements IModule,IAutoSave{
 	}
 	private void main(String s, Tag tag) {
 		//DiscordAPI.chatDefaultHost("アラーム機能が呼び出されました パラメータ文字列="+s);
-		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy年MM月dd日");
+		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy年MM月");
+		SimpleDateFormat sdf1 = new SimpleDateFormat("dd日");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日HH時mm分");
 		//sdf.setTimeZone(TimeZone.getTimeZone("UTC+9"));
 		try{
 			long nd=System.currentTimeMillis();
+			Format f=new Format(s);
+			String d=null;
 			if(s.indexOf("明日の")==0) {
 				s=s.substring(3);
-				nd+=24*60*60*1000L;
+				f.s=s;
+				d=sdf1.format(new Date(nd+24*60*60*1000L));
 			}
 			if(s.indexOf("明後日の")==0) {
 				s=s.substring(4);
-				nd+=2*24*60*60*1000L;
+				f.s=s;
+				d=sdf1.format(new Date(nd+2*24*60*60*1000L));
 			}
-			Format f=new Format(s);
+			if(d==null)d=f.a(tag.con, "日");
 			String h=f.a(tag.con, "時");
-			if(h==null)return;
 			String m=f.a(tag.con, "分");
-			if(m==null)return;
 			String message=null;
 			if(f.s!=null&&!f.s.isEmpty())message=f.s;
-			Date date = sdf.parse(sdf0.format(new Date(nd))+h+m);
+			Date date = sdf.parse(sdf0.format(new Date())+d+h+m);
 			//date.getTime(),sdf.format(date), con.userid
 			System.out.println("時間指定は正常に処理されました\n結果="+sdf.format(date));
 			StringBuilder sb=new StringBuilder("/");
@@ -217,7 +220,7 @@ public class Alarm implements IModule,IAutoSave{
 				//DiscordAPI.chatDefaultHost(t+" 指定は正常に処理されました\n結果="+h);
 				return h+t;
 			}
-			return null;
+			return "00"+t;
 		}
 	}
 	@Override
