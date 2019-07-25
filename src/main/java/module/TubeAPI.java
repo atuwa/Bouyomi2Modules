@@ -103,7 +103,7 @@ public class TubeAPI implements IModule,IAutoSave{
 			BouyomiProxy.module.event(new PlayVideoEvent(videoID));
 			if(bc!=null&&bc.user!=null&&!bc.user.isEmpty())lastPlayUser=bc.user;
 			else lastPlayUser=null;
-			if(bc!=null&&bc.userid!=null&&!bc.userid.isEmpty())lastPlayUserId=bc.user;
+			if(bc!=null&&bc.userid!=null&&!bc.userid.isEmpty())lastPlayUserId=bc.userid;
 			else lastPlayUserId=null;
 			if(bc instanceof BouyomiBOTConection) {
 				BouyomiBOTConection bbc=(BouyomiBOTConection)bc;
@@ -170,10 +170,36 @@ public class TubeAPI implements IModule,IAutoSave{
 			String s=getLine("GETtitle=0");
 			if(s!=null&&!s.isEmpty()&&!s.equals(lastPlay)) {
 				BouyomiProxy.module.event(new PlayVideoTitleEvent(s));
+				StringBuilder sb=new StringBuilder();
+				sb.append("V=").append(lastPlay).append("\t");
+				sb.append("N=").append(lastPlayUser.replaceAll("\t"," ")).append("\t");
+				sb.append("U=").append(lastPlayUserId).append("\t");
+				sb.append("G=").append(lastPlayGuildId).append("\t");
+				sb.append("C=").append(lastPlayChannelId).append("\t");
+				sb.append("T=").append(s.replaceAll("\t"," "));
+				saveLog(sb);
 				System.out.println("動画タイトル："+s);
 				DiscordAPI.chatDefaultHost(bc,"/動画タイトル："+s);
 				break;
 			}
+		}
+	}
+	private static void saveLog(StringBuilder s) {
+		try{
+			FileOutputStream fos=new FileOutputStream("play_title.txt",true);//追加モードでファイルを開く
+			try{
+				String d=new SimpleDateFormat("yyyy/MM/dd HH時mm分ss秒").format(new Date());
+				StringBuilder sb=new StringBuilder();
+				sb.append("L=").append(Long.toString(System.currentTimeMillis()));
+				sb.append("\tF=").append(d).append("\t");
+				sb.append(s);
+				sb.append("\n");
+				fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));//改行文字を追加してバイナリ化
+			}finally {
+				fos.close();
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 	public static void checkError(BouyomiConection bc) {
