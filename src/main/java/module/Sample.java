@@ -113,7 +113,7 @@ public class Sample implements IModule{
 		org=tag.getTag("サーバーアイコン取得","サーバアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
-			icon(bc,bc.server.getIconUrl());
+			icon(bc,bc.server.getIconUrl(),bc.server.getId()+"_server_icon");
 		}
 		org=tag.getTag("サーバーアイコンURL","サーバーアイコンurl",
 				"サーバアイコンURL","サーバアイコンurl");
@@ -126,7 +126,7 @@ public class Sample implements IModule{
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			if(org.isEmpty())org=bc.userid;
 			String url=bc.server.getMemberById(org).getUser().getEffectiveAvatarUrl();
-			icon(bc,url);
+			icon(bc,url,org+"_user_icon");
 		}
 		org=tag.getTag("ユーザーアイコンURL","ユーザーアイコンurl",
 				"ユーザアイコンURL","ユーザアイコンurl");
@@ -167,11 +167,11 @@ public class Sample implements IModule{
 			tag.chatDefaultHost(sb.toString());
 		}
 	}
-	private void icon(BouyomiBOTConection bc,String url) {
+	private void icon(BouyomiBOTConection bc,String url,String name) {
 		ByteArrayOutputStream os=new ByteArrayOutputStream();
 		DiscordBOT.DefaultHost.downloadOutputStream(url,os);
 		int index=url.lastIndexOf('.');
-		String name="icon";
+		//String name="icon";
 		if(index>0&&index<url.length())name+=url.substring(index);
 		ByteArrayInputStream bais=new ByteArrayInputStream(os.toByteArray());
 		NamedFileObject no=new NamedFileObject(bais,name);
