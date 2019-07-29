@@ -294,10 +294,14 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 			Live l=(Live) o;
 			return title.equals(l.title)&&contentId.equals(l.contentId)&&description.equals(l.description);
 		}
+		public String getURL() {
+			if(contentId==null||contentId.isEmpty())return null;
+			return "https://live2.nicovideo.jp/watch/"+contentId;
+		}
 		@Override
 		public String toString() {
 			StringBuilder sb=new StringBuilder("配信ID=").append(contentId).append("\n");
-			sb.append("配信URL=https://live2.nicovideo.jp/watch/").append(contentId).append("\n");
+			sb.append("配信URL=").append(getURL()).append("\n");
 			sb.append("配信タイトル=").append(title).append("\n");
 			//sb.append("説明文\n").append(description);
 			return sb.toString();
