@@ -17,7 +17,7 @@ public class CommentLogger implements IModule{
 		System.out.println("ログ"+(logger==null?"無し":logger.getFile()));
 	}
 	@Override
-	public void call(Tag tag){
+	public void precall(Tag tag){
 		if(logger!=null) {
 			logger.log(tag.con.user+"\t"+tag.con.text+"\t"+tag.con.userid);
 			String fn=logger.getFile();
@@ -26,5 +26,9 @@ public class CommentLogger implements IModule{
 				logger.nextFile();
 			}
 		}
+	}
+	@Override
+	public void call(Tag tag){
+
 	}
 }
