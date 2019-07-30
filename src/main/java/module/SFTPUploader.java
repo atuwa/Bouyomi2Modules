@@ -19,6 +19,7 @@ import com.jcraft.jsch.SftpException;
 
 import bouyomi.BouyomiProxy;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
+import bouyomi.DiscordBOT.DiscordAPI;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
@@ -197,7 +198,7 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 			return null;
 		}
 		is =new ByteArrayInputStream(os.toByteArray());
-		return new FileData(a.getSize(),is,a.getFileName());
+		return new FileData(a.getSize(),is,bc.userid+"_"+a.getFileName());
 	}
 	private boolean check(String... list) {
 		for(String s:list) {
@@ -219,28 +220,32 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 			}else try{
 				Long.parseLong(s);
 				if(whiteList.contains(s)) {
-					tag.chatDefaultHost("登録済です");
+					tag.chatDefaultHost(tag.getUserName(s)+"さんは登録済です");
 				}else {
 					whiteList.add(s);
 					whiteList_seved=false;
-					tag.chatDefaultHost("登録しました");
+					tag.chatDefaultHost(tag.getUserName(s)+"さんを登録しました");
 				}
 			}catch(NumberFormatException e) {
 				tag.chatDefaultHost("ユーザIDを指定してください");
 			}
 		}
 		s=tag.getTag("SFTP拒否");
-		if(s!=null&&isAdmin(tag.con.userid)) {
+		if(s!=null&&(isAdmin(tag.con.userid)||whiteList.contains(s))) {
 			if(s.isEmpty()){
-				tag.chatDefaultHost("ユーザIDを指定してください");
-			}else try{
+				if(!isAdmin(tag.con.userid)) {
+					whiteList.remove(s);
+					whiteList_seved=false;
+					tag.chatDefaultHost(tag.getUserName(s)+"さんを許可リストから削除しました");
+				}else tag.chatDefaultHost("ユーザIDを指定してください");
+			}else if(isAdmin(tag.con.userid))try{
 				Long.parseLong(s);
 				if(whiteList.contains(s)) {
 					whiteList.remove(s);
 					whiteList_seved=false;
-					tag.chatDefaultHost("許可リストから削除しました");
+					tag.chatDefaultHost(tag.getUserName(s)+"さんを許可リストから削除しました");
 				}else {
-					tag.chatDefaultHost("登録されていません");
+					tag.chatDefaultHost(tag.getUserName(s)+"さんは登録されていません");
 				}
 			}catch(NumberFormatException e) {
 				tag.chatDefaultHost("ユーザIDを指定してください");
@@ -269,6 +274,8 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 				if(log)System.out.println("DiscordにSFTP転送するファイルが投稿されました"+bc.list.length);
 				FileData fd=getData(tag,bc,bc.list[i]);
 				if(fd!=null)synchronized(queue) {
+					System.out.println(fd.name+"をアップロード");
+					DiscordAPI.chatDefaultHost(tag,fd.name+"をアップロード");
 					queue.add(fd);
 				}
 			}
