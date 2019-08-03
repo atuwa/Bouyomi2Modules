@@ -277,6 +277,20 @@ public class TubeAPI implements IModule,IAutoSave{
 		}
 		return null;
 	}
+	private static int getTimeParm(String url) {
+		String tS=extract(url,"t");
+		int t=0;
+		if(tS!=null) {
+			Matcher m=Pattern.compile("[0-9]++").matcher(tS);
+			if(!m.find())return 0;
+			try{
+				t=Integer.parseInt(m.group());
+			}catch(NumberFormatException nfe) {
+
+			}
+		}
+		return t;
+	}
 	public static synchronized boolean play(BouyomiConection bc,String url) {
 		if(url.indexOf("https://www.youtube.com/")==0||
 				url.indexOf("https://m.youtube.com/")==0||
@@ -286,8 +300,12 @@ public class TubeAPI implements IModule,IAutoSave{
 				url.indexOf("http://youtube.com/")==0) {
 			String vid=extract(url,"v");
 			String lid=extract(url,"list");
-			if(vid!=null)return playTube(bc, vid);
+			if(vid!=null) {
+				vid+="&t="+getTimeParm(url);
+				return playTube(bc, vid);
+			}
 			else if(lid!=null) {
+				lid+="&t="+getTimeParm(url);
 				String indexS=extract(url,"index");
 				int index=-1;
 				if(indexS!=null) {
@@ -305,10 +323,12 @@ public class TubeAPI implements IModule,IAutoSave{
 				return false;
 			}
 		}else if(url.indexOf("https://youtu.be/")==0||url.indexOf("http://youtu.be/")==0) {
+			int t=getTimeParm(url);
 			int end=url.indexOf('?');
 			String vid;
 			if(end>=0)vid=url.substring(17,end);
 			else vid=url.substring(17);
+			vid+="&t="+t;
 			return playTube(bc, "v="+vid);
 		}else if(url.indexOf("v=")==0) {
 			return playTube(bc, url);
