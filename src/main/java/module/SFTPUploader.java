@@ -90,11 +90,15 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 					queue.remove(0);
 					try {
 						if(log)System.out.println("ファイル名重複を検証します...");
-						final String nb=fd.name;
-						if(isExist(channel,fd.name)) {
-							for(int i=1;isExist(channel,fd.name);i++){
-								fd.name=nb+i;
-							}
+						int index=fd.name.lastIndexOf('.');
+						String suffix=".png";
+						String nb;
+						if(index>0&&index<fd.name.length()) {
+							suffix=fd.name.substring(index);
+							nb=fd.name.substring(0,index);
+						}else nb=fd.name;
+						for(int i=1;isExist(channel,fd.name);i++){
+							fd.name=nb+"_"+i+suffix;
 						}
 						if(log)System.out.println("ファイル名"+fd.name+"で転送を開始します...");
 						//アップロード
@@ -213,7 +217,12 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 	}
 	@Override
 	public void call(Tag tag){
-		String s=tag.getTag("SFTP許可");
+		String s=tag.getTag("SFTPログ設定");
+		if(s!=null&&isAdmin(tag.con.userid)) {
+			log=!log;
+			tag.chatDefaultHost("/ログを出力"+(log?"する":"しない")+"ようにしました");
+		}
+		s=tag.getTag("SFTP許可");
 		if(s!=null&&isAdmin(tag.con.userid)) {
 			if(s.isEmpty()){
 				tag.chatDefaultHost("ユーザIDを指定してください");
@@ -275,7 +284,7 @@ public class SFTPUploader implements IModule,Runnable,IAutoSave{
 				FileData fd=getData(tag,bc,bc.list[i]);
 				if(fd!=null)synchronized(queue) {
 					System.out.println(fd.name+"をアップロード");
-					DiscordAPI.chatDefaultHost(tag,fd.name+"をアップロード");
+					DiscordAPI.chatDefaultHost(tag,"/"+fd.name+"をアップロード");
 					queue.add(fd);
 				}
 			}
