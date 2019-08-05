@@ -665,7 +665,7 @@ public class TubeAPI implements IModule,IAutoSave{
 		if(tag!=null) {
 			try {
 				String s=Integer.toString(Integer.parseInt(tag));
-				if(operation(s)) {
+				if(operation("seek="+s)) {
 					TAG.chatDefaultHost("/動画を"+s+"秒にシークしました");
 				}else TAG.chatDefaultHost("/動画シーク失敗");
 			}catch(Exception e) {
