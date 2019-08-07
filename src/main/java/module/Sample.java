@@ -117,7 +117,11 @@ public class Sample implements IModule{
 			for(byte b:ba) {
 				int i=b&0x000000FF;
 				String hex=Integer.toBinaryString(i);
-				while(hex.length()<8)sb.append("0");
+				int ac=hex.length();
+				while(ac<8) {
+					ac++;
+					sb.append("0");
+				}
 				sb.append(hex);
 			}
 			tag.chatDefaultHost(sb.toString());
