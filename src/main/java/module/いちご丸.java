@@ -35,6 +35,8 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	private boolean 今日歩いた距離保存済;
 	private int 一日に引ける回数=1;//回数制限
 	private static String 本人ID="534060228099178537";
+	private UserList 気のせい引いた人=new UserList();
+	private int 最後に書き込んだ気のせい引いた人リストのハッシュ値;
 	public いちご丸(){
 		try{
 			BouyomiProxy.load(今日引いた人達,"いちご丸.txt");
@@ -44,6 +46,12 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			今日歩いた距離保存済=true;
 		}catch(IOException|NumberFormatException e){
 			e.printStackTrace();
+		}
+		try{
+			気のせい引いた人.readFromFile("いちご気のせい.long.array");
+			最後に書き込んだ気のせい引いた人リストのハッシュ値=気のせい引いた人.hashCode();
+		}catch(IOException e1){
+			e1.printStackTrace();
 		}
 		try{
 			BouyomiProxy.load(今日歩いた距離,"いちご丸確率.txt");
@@ -61,6 +69,14 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	}
 	@Override
 	public void call(Tag tag){
+		if(tag.con.text.equals("気のせいでしょ")&&tag.con.mentions.contains("581268794794573870")) {
+			if(気のせい引いた人.contains(Long.parseLong(tag.con.userid))) {
+				tag.chatDefaultHost("今日はもう制限まで引いたでしょ/*"+tag.con.user+"さん");
+			}else {
+				気のせい抽選 t=new 気のせい抽選(tag);
+				t.呼び出し();
+			}
+		}
 		if(tag.con.text.equals("痩せろデブ")||tag.con.text.equals("痩せデブ")) {
 			int 引いた回数=Integer.parseInt(今日引いた人達.getOrDefault(tag.con.userid,"0"));
 			if(何回でも引けるか(tag)) {
@@ -230,6 +246,30 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			e.printStackTrace();
 		}
 	}
+	private class 気のせい抽選{
+		private Tag tag;
+		public 気のせい抽選(Tag tag){
+			this.tag=tag;
+		}
+		public void 呼び出し(){
+			String 今までに引いた回数=今日引いた人達.get(tag.con.userid);
+			if(今までに引いた回数==null||今までに引いた回数.isEmpty()) {
+				tag.chatDefaultHost("まだ引いてないよ/*"+tag.con.user+"さん");
+				return;
+			}else if(Integer.parseInt(今までに引いた回数)<一日に引ける回数){
+				int 残り=一日に引ける回数-Integer.parseInt(今までに引いた回数);
+				tag.chatDefaultHost("あと"+残り+"回引けるよ/*"+tag.con.user+"さん");
+				return;
+			}
+			気のせい引いた人.add(Long.parseLong(tag.con.userid));
+			int ランダム値=ランダム生成源.nextInt(100);
+			if(ランダム値>=10) {
+				tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"お前もう引いただろ(確率10%)");
+			}else if(今日引いた人達.remove(tag.con.userid)!=null) {
+				tag.chatDefaultHost("そうか気のせいか。/*"+tag.con.user+"は引けるようにしてやるよ。(確率10%)");
+			}
+		}
+	}
 	private class 抽選{
 		private Tag tag;
 		private double ランダム値;
@@ -375,11 +415,19 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				e.printStackTrace();
 			}
 		}
+		int 気のせいハッシュ値=気のせい引いた人.hashCode();
+		if(最後に書き込んだ気のせい引いた人リストのハッシュ値!=気のせいハッシュ値)try{
+			気のせい引いた人.writeToFile("いちご気のせい.long.array");
+			最後に書き込んだ気のせい引いた人リストのハッシュ値=気のせいハッシュ値;
+		}catch(IOException e1){
+			e1.printStackTrace();
+		}
 	}
 	@Override
 	public void update(){
 		DailyUpdate.chat("痩せろデブが引けるようになりました");
 		今日引いた人達.clear();
+		気のせい引いた人.clear();
 		int 距離=0;
 		for(String s:今日歩いた距離) {
 			try{
