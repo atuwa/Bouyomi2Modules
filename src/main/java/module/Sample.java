@@ -110,6 +110,35 @@ public class Sample implements IModule{
 			String d=new String(ba,StandardCharsets.UTF_8);
 			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"\n"+d);
 		}
+		org=tag.getTag("2進数E");
+		if(org!=null) {
+			byte[] ba=org.getBytes(StandardCharsets.UTF_8);
+			StringBuilder sb=new StringBuilder("/");
+			for(byte b:ba) {
+				int i=b&0x000000FF;
+				String hex=Integer.toBinaryString(i);
+				while(hex.length()<8)sb.append("0");
+				sb.append(hex);
+			}
+			tag.chatDefaultHost(sb.toString());
+		}
+		org=tag.getTag("2進数D");
+		if(org!=null) {
+			StringReader r=new StringReader(org);
+			byte[] ba=new byte[org.length()/2];
+			char[] cbuf=new char[8];
+			for(int i=0;i<ba.length;i++) {
+				try{
+					int rl=r.read(cbuf);
+					if(rl<0)break;
+					ba[i]=(byte) (Integer.parseInt(String.valueOf(cbuf),2)&0xFF);
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			}
+			String d=new String(ba,StandardCharsets.UTF_8);
+			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"\n"+d);
+		}
 		org=tag.getTag("サーバーアイコン取得","サーバアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
