@@ -90,7 +90,7 @@ public class Alarm implements IModule,IAutoSave{
 	private void main(String s, Tag tag) {
 		//DiscordAPI.chatDefaultHost("アラーム機能が呼び出されました パラメータ文字列="+s);
 		SimpleDateFormat sdf0 = new SimpleDateFormat("yyyy年MM月");
-		SimpleDateFormat sdf1 = new SimpleDateFormat("dd日");
+		SimpleDateFormat sdf1 = new SimpleDateFormat("dd");
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日HH時mm分");
 		//sdf.setTimeZone(TimeZone.getTimeZone("UTC+9"));
 		try{
@@ -100,16 +100,16 @@ public class Alarm implements IModule,IAutoSave{
 			if(s.indexOf("明日の")==0) {
 				s=s.substring(3);
 				f.s=s;
-				d=sdf1.format(new Date(nd+24*60*60*1000L));
+				d=sdf1.format(new Date(nd+24*60*60*1000L))+"日";
 			}
 			if(s.indexOf("明後日の")==0) {
 				s=s.substring(4);
 				f.s=s;
-				d=sdf1.format(new Date(nd+2*24*60*60*1000L));
+				d=sdf1.format(new Date(nd+2*24*60*60*1000L))+"日";
 			}
-			if(d==null)d=f.a(tag.con, "日");
-			String h=f.a(tag.con, "時");
-			String m=f.a(tag.con, "分");
+			if(d==null)d=f.a(tag.con, "日",sdf1.format(new Date(nd)));
+			String h=f.a(tag.con, "時","00");
+			String m=f.a(tag.con, "分","00");
 			String message=null;
 			if(f.s!=null&&!f.s.isEmpty())message=f.s;
 			Date date = sdf.parse(sdf0.format(new Date())+d+h+m);
@@ -204,13 +204,13 @@ public class Alarm implements IModule,IAutoSave{
 		public Format(String t) {
 			s=t;
 		}
-		private String a(BouyomiConection con,String t) {
+		private String a(BouyomiConection con,String t,String def) {
 			int hi=s.indexOf(t);
 			if(hi>=0) {
 				String h=s.substring(0,hi);
 				s=s.substring(hi+1);
 				if(h.length()<1) {
-					h="00";
+					h=def;
 				}else if(h.length()<2) {
 					h="0"+h;
 				}else if(h.length()>2) {
@@ -220,7 +220,7 @@ public class Alarm implements IModule,IAutoSave{
 				//DiscordAPI.chatDefaultHost(t+" 指定は正常に処理されました\n結果="+h);
 				return h+t;
 			}
-			return "00"+t;
+			return def+t;
 		}
 	}
 	@Override
