@@ -10,8 +10,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import bouyomi.BouyomiProxy;
 import bouyomi.IAutoSave;
@@ -31,12 +29,22 @@ public class PxivAlart implements IModule,IAutoSave{
 			e.printStackTrace();
 		}
 	}
+	public class PxivLiveEvent implements BouyomiEvent{
+		public final String url;
+		private PxivLiveEvent(String u) {
+			url=u;
+		}
+	}
 	@Override
 	public void call(Tag tag){
-		if(tag.con.text.contains(pxivURL)) {
-			Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
-			if(m.find()) {
-				String urlS=m.group();
+		String s=tag.getTag("配信");
+		//if(tag.con.text.contains(pxivURL)&&tag.con.text.contains("配信開始")) {
+		if(s!=null&&s.contains(pxivURL)) {
+			//Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
+			//if(m.find())
+			{
+				//String urlS=m.group();
+				String urlS=s;
 				if(!map.contains(urlS))try{
 					URL url=new URL(urlS);
 					HttpURLConnection uc=(HttpURLConnection)url.openConnection();
@@ -45,6 +53,7 @@ public class PxivAlart implements IModule,IAutoSave{
 					InputStream is=uc.getInputStream();//POSTした結果を取得
 					if(uc.getResponseCode()==200) {
 						map.add(urlS);
+						BouyomiProxy.module.event(new PxivLiveEvent(urlS));
 						saved=false;
 						tag.chatDefaultHost("配信中リストに追加しました");
 					}else if(uc.getResponseCode()==302) {
@@ -130,6 +139,11 @@ public class PxivAlart implements IModule,IAutoSave{
 			//System.out.println("元URL="+u);
 			//System.out.println("最終URL="+uc.getURL().toString());
 			lived=true;
+			try{
+				Thread.sleep(500);
+			}catch(InterruptedException e){
+				e.printStackTrace();
+			}
 		}
 		public String toString() {
 			if(lived)return title;
