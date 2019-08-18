@@ -28,8 +28,8 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 	public static HashMap<String,String> alarted=new HashMap<String,String>();
 	public static String DefaultQuery="ゲーム OR 描いてみた OR リスナーは外部記憶装置 OR 通知用";
 
-	public static final String gid="533577441952661504";
-	public static final String cid="569063021918552074";
+	public static final String gid="566942640986390528";
+	public static final String cid="566943792033169418";
 	public static class NicoLiveEvent implements BouyomiEvent{
 		public Live[] live;
 		public NicoLiveEvent(Live[] lv) {

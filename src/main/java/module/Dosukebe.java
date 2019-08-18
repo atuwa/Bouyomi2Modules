@@ -51,8 +51,8 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 	private static BufferedImage img;
 	private boolean saved=false;
 	private int up;
-	private static final String gid="533577441952661504";
-	private static final String cid="569063021918552074";
+	private static final String gid="566942640986390528";
+	private static final String cid="566943792033169418";
 	public Dosukebe(){
 		try{
 			BouyomiProxy.load(used,"Dosukebe.txt");
