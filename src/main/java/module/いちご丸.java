@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,7 +72,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	public void call(Tag tag){
 		if(tag.con.text.equals("気のせいでしょ")&&tag.con.mentions.contains("581268794794573870")) {
 			if(気のせい引いた人.contains(Long.parseLong(tag.con.userid))) {
-				tag.chatDefaultHost("今日はもう制限まで引いたでしょ/*"+tag.con.user+"さん");
+				tag.chatDefaultHost("いや間違いないで/*"+tag.con.user+"さん");
 			}else {
 				気のせい抽選 t=new 気のせい抽選(tag);
 				t.呼び出し();
@@ -79,13 +80,18 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		if(tag.con.text.equals("痩せろデブ")||tag.con.text.equals("痩せデブ")) {
 			int 引いた回数=Integer.parseInt(今日引いた人達.getOrDefault(tag.con.userid,"0"));
+			抽選 t=null;
 			if(何回でも引けるか(tag)) {
-				抽選 t=new 抽選(tag);
+				t=new 抽選(this,tag);
 				if(本人ID.equals(tag.con.userid))t.いちご丸が呼び出し();
 				else t.呼び出し();
 			}else if(引いた回数>=一日に引ける回数) {//TODO 回数判定
 				tag.chatDefaultHost("今日はもう制限まで引いたでしょ/*"+tag.con.user+"さん");
-			}else new 抽選(tag).呼び出し();
+			}else{
+				t=new 抽選(this,tag);
+				t.呼び出し();
+			}
+			if(t!=null)BouyomiProxy.module.event(t);
 		}
 		if(tag.con.text.equals("今何メートル")||tag.con.text.toLowerCase().equals("今何m")||
 				tag.con.text.equals("今何キロメートル")||tag.con.text.toLowerCase().equals("今何km")||
@@ -213,13 +219,34 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			}
 			tag.chatDefaultHost(sb.toString());
 		}
+		パラメータ=tag.getTag("今日引いた人達");
+		if(パラメータ!=null) {
+			StringBuilder sb=new StringBuilder("/");
+			for(Entry<String, String> s:今日引いた人達.entrySet()){
+				try{
+					Long.parseLong(s.getKey());
+				}catch(NumberFormatException e) {
+					continue;
+				}
+				sb.append(tag.getUserName(s.getKey())).append(" さんが ").append(s.getValue()).append("回");
+				try{
+					if(気のせい引いた人.contains(Long.parseLong(s.getKey())))sb.append("(気のせい済)");
+				}catch(NumberFormatException e) {}
+				sb.append("\n");
+			}
+			tag.chatDefaultHost(sb.toString());
+		}
 		パラメータ=tag.getTag("痩せろデブをもう一回引けるようにする");
 		if(パラメータ!=null&&(本人ID.equals(tag.con.userid)||tag.isAdmin())) {
 			if(パラメータ.isEmpty()) {
 				tag.chatDefaultHost(tag.con.mute?"/":""+今日引いた人達.size()+"件の引いた人リストを消去しました");
 				今日引いた人達.clear();
+				気のせい引いた人.clear();
 			}else if(今日引いた人達.containsKey(パラメータ)) {
 				if(今日引いた人達.remove(パラメータ)!=null) {
+					try{
+						気のせい引いた人.remove(Long.parseLong(パラメータ));
+					}catch(NumberFormatException e) {}
 					tag.chatDefaultHost(tag.con.mute?"/":""+tag.getUserName(パラメータ)+"を引いた人リストから消去しました");
 				}
 			}
@@ -270,42 +297,45 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			}
 		}
 	}
-	private class 抽選{
-		private Tag tag;
-		private double ランダム値;
-		private long 古い合計距離=合計距離;
-		public 抽選(Tag tag){
+	public static class 抽選 implements BouyomiEvent{
+		public いちご丸 親;
+		public Tag tag;
+		public double ランダム値;
+		public long 古い合計距離;
+		public 抽選(いちご丸 i,Tag tag){
+			親=i;
 			this.tag=tag;
-			String 今までに引いた回数=今日引いた人達.get(tag.con.userid);
+			古い合計距離=親.合計距離;
+			String 今までに引いた回数=親.今日引いた人達.get(tag.con.userid);
 			if(今までに引いた回数==null||今までに引いた回数.isEmpty())今までに引いた回数="1";
 			else 今までに引いた回数=Integer.toString(Integer.parseInt(今までに引いた回数)+1);
-			今日引いた人達.put(tag.con.userid,今までに引いた回数);
-			保存済=false;
+			親.今日引いた人達.put(tag.con.userid,今までに引いた回数);
+			親.保存済=false;
 		}
 		public void いちご丸が呼び出し() {
-			ランダム値=ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
+			ランダム値=親.ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
 			if(ランダム値<0.5)まさかこれを引くとは("0.5%");
 			else if(ランダム値<5.5)むしゃむしゃ("5%");
-			else if(ランダム値<確率+5.5)行く(確率+"%");
-			else やだ((100-(確率+5.5))+"%");
+			else if(ランダム値<親.確率+5.5)行く(親.確率+"%");
+			else やだ((100-(親.確率+5.5))+"%");
 		}
 		public void 呼び出し() {
-			ランダム値=ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
+			ランダム値=親.ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
 			if(ランダム値<0.1)まさかこれを引くとは("0.1%");
 			else if(ランダム値<1.1)むしゃむしゃ("1%");
-			else if(ランダム値<確率+1.1)行く(確率+"%");
-			else やだ((100-(確率+1.1))+"%");
+			else if(ランダム値<親.確率+1.1)行く(親.確率+"%");
+			else やだ((100-(親.確率+1.1))+"%");
 		}
 		private void まさかこれを引くとは(String 確率メッセージ){
-			今日引いた人達.put(tag.con.userid,String.valueOf(一日に引ける回数));
+			親.今日引いた人達.put(tag.con.userid,String.valueOf(親.一日に引ける回数));
 			int 増える量=15000;//15km増える
-			合計距離+=増える量;
+			親.合計距離+=増える量;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(Util.IDtoMention(tag.con.userid));
 			sb.append(確率メッセージ).append("のこれを引くとは凄い運だな\n15km行く");
 			sb.append("(").append(ランダム値).append(")");
-			if(リミッター())sb.append("42.195km上限");
+			if(親.リミッター())sb.append("42.195km上限");
 			定型文(sb,確率メッセージ);
 			String s=sb.toString();
 			System.out.println(s);
@@ -313,13 +343,13 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		private void むしゃむしゃ(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=ランダム生成源.nextInt(450)+50;
-			合計距離=合計距離-距離;
+			int 距離=親.ランダム生成源.nextInt(450)+50;
+			親.合計距離=親.合計距離-距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(距離).append("m減った");
 			//sb.append("(").append(ランダム値).append(")");
-			if(リミッター())sb.append("-2km下限");
+			if(親.リミッター())sb.append("-2km下限");
 			定型文(sb,確率メッセージ);
 			String s=sb.toString();
 			System.out.println(s);
@@ -327,13 +357,13 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		private void 行く(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=ランダム生成源.nextInt(550)+250;
-			合計距離=合計距離+距離;
+			int 距離=親.ランダム生成源.nextInt(550)+250;
+			親.合計距離=親.合計距離+距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
 			sb.append(距離).append("m行く");
 			//sb.append("(").append(ランダム値).append(")");
-			if(リミッター())sb.append("42.195km上限");
+			if(親.リミッター())sb.append("42.195km上限");
 			定型文(sb,確率メッセージ);
 			String s=sb.toString();
 			System.out.println(s);
@@ -353,25 +383,25 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("/*");
 			変化メッセージ(sb);
 			sb.append(" 抽選者：").append(tag.con.user);
-			int 引いた回数=Integer.parseInt(今日引いた人達.get(tag.con.userid));
-			if(何回でも引けるか(tag)) {
+			int 引いた回数=Integer.parseInt(親.今日引いた人達.get(tag.con.userid));
+			if(親.何回でも引けるか(tag)) {
 				sb.append("(").append(引いた回数).append("回目)");
 			}else {
-				int 引ける回数=一日に引ける回数-引いた回数;
+				int 引ける回数=親.一日に引ける回数-引いた回数;
 				sb.append("(あと").append(引ける回数).append("回)");
 			}
 			sb.append(" 確率").append(確率メッセージ);
 		}
 		private void 変化メッセージ(StringBuilder 書き込み先) {
-			long 増えた分=合計距離-古い合計距離;
+			long 増えた分=親.合計距離-古い合計距離;
 			if(増えた分==0)return;
 	        DecimalFormat df = new DecimalFormat("#,##0");
 			書き込み先.append("残り").append(df.format(古い合計距離));
 			if(増えた分<0)書き込み先.append(増えた分);
 			else 書き込み先.append("+").append(増えた分);
-			書き込み先.append("=").append(df.format(合計距離)).append("m(");
+			書き込み先.append("=").append(df.format(親.合計距離)).append("m(");
 	        DecimalFormat df2 = new DecimalFormat("#,##0.0");
-	        書き込み先.append(df2.format(合計距離/1000D)).append("km)");
+	        書き込み先.append(df2.format(親.合計距離/1000D)).append("km)");
 		}
 	}
 	protected boolean リミッター() {
