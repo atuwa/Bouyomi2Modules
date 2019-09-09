@@ -9,8 +9,11 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import bouyomi.DiscordBOT;
+import bouyomi.DiscordBOT.BouyomiBOTConection;
 import bouyomi.IModule;
 import bouyomi.Tag;
+import bouyomi.Util;
 import bouyomi.Util.JsonUtil;
 
 public class ShortURL implements IModule{
@@ -52,7 +55,16 @@ public class ShortURL implements IModule{
 			if(mode==0)ret="https://kisu.me/"+JsonUtil.get(json,"shorten").toString();
 			else if(mode==1)ret=JsonUtil.get(json,"shortURL").toString();
 			System.out.println("短縮="+ret+"　元URL="+url);
-			tag.chatDefaultHost("短縮結果 "+ret);
+			if(tag.con.text.isEmpty()&&tag.con instanceof BouyomiBOTConection) {
+				BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
+				try{
+					DiscordBOT.DefaultHost.getTextChannel(bc.channel.getId()).deleteMessageById(bc.event.getMessageId()).queue();
+					tag.chatDefaultHost(Util.IDtoMention(bc.userid)+"がリンクを送信 "+ret);
+				}catch(Exception t) {
+					t.printStackTrace();
+					tag.chatDefaultHost(ret);
+				}
+			}else tag.chatDefaultHost(ret);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
