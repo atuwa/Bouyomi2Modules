@@ -178,7 +178,7 @@ public class QuestionModule implements IModule,IAutoSave{
 				result.append("です");
 				if(tm.chatDefaultHost(result.toString())) {
 					gid=tm.getGuild().getId();
-					cid=tm.getTextChannel().getId();
+					cid=tm.getChannel().getId();
 					tm.con.addTask.add("アンケートを開始します");
 				}else tm.con.addTask.add("開始したけどディスコードに接続できません");
 			}
@@ -193,9 +193,11 @@ public class QuestionModule implements IModule,IAutoSave{
 			class Val implements Comparable<Val>{
 				private final String k;
 				private final int v;
-				public Val(String key,int value) {
-					k=key;
-					v=value;
+				private final int index;
+				public Val(int i) {
+					k=questionnaireList.get(i);
+					v=questionnaire[i];
+					index=i;
 				}
 				@Override
 				public int compareTo(Val o){
@@ -203,10 +205,10 @@ public class QuestionModule implements IModule,IAutoSave{
 				}
 			}
 			Val[] v=new Val[questionnaire.length];
-			for(int i=0;i<v.length;i++)v[i]=new Val(questionnaireList.get(i),questionnaire[i]);
+			for(int i=0;i<v.length;i++)v[i]=new Val(i);
 			Arrays.sort(v);
 			for(int i=0;i<v.length;i++) {
-				result.append(v[i].k).append(" が").append(v[i].v).append("票");
+				result.append(v[i].index).append(" : ").append(v[i].k).append(" が").append(v[i].v).append("票");
 				if(all>0)result.append("/*(").append(fomat.format(v[i].v/(double)all*100D)).append("%)*/");
 				result.append("\n");
 			}

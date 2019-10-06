@@ -68,7 +68,7 @@ public class Alarm implements IModule,IAutoSave{
 		}
 	}
 	private String makeKey(Tag tag){
-		return tag.con.userid+","+tag.getGuild().getId()+","+tag.getTextChannel().getId();
+		return tag.con.userid+","+tag.getGuild().getId()+","+tag.getChannel().getId();
 	}
 	private void get(Tag con,String id) {
 		String name=con.con.user;

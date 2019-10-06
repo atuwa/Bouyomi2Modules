@@ -57,7 +57,7 @@ public class お題抽選システム implements IModule{
 				tag.chatDefaultHost("既にお題が1件もありません");
 			}else try {
 				NamedFileObject fo=new NamedFileObject(new FileInputStream(f),"odai.txt");
-				DiscordBOT.DefaultHost.send("残っていたお題リスト",bc.server,bc.textChannel,fo);
+				DiscordBOT.DefaultHost.send("残っていたお題リスト",bc.channel,fo);
 			}catch(FileNotFoundException e){
 				e.printStackTrace();
 			}
@@ -68,7 +68,7 @@ public class お題抽選システム implements IModule{
 			File f=new File(makeFilePath(bc));
 			try{
 				NamedFileObject fo=new NamedFileObject(new FileInputStream(f),"odai.txt");
-				DiscordBOT.DefaultHost.send("お題リスト",bc.server,bc.textChannel,fo);
+				DiscordBOT.DefaultHost.send("お題リスト",bc.channel,fo);
 			}catch(FileNotFoundException e){
 				e.printStackTrace();
 			}

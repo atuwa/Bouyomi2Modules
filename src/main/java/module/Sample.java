@@ -8,6 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import bouyomi.DiscordBOT;
 import bouyomi.DiscordBOT.BouyomiBOTConection;
@@ -131,34 +132,35 @@ public class Sample implements IModule{
 			StringReader r=new StringReader(org);
 			byte[] ba=new byte[org.length()/2];
 			char[] cbuf=new char[8];
-			for(int i=0;i<ba.length;i++) {
+			int len;
+			for(len=0;;len++) {
 				try{
 					int rl=r.read(cbuf);
 					if(rl<0)break;
-					ba[i]=(byte) (Integer.parseInt(String.valueOf(cbuf),2)&0xFF);
+					ba[len]=(byte) (Integer.parseInt(String.valueOf(cbuf),2)&0xFF);
 				}catch(IOException e){
 					e.printStackTrace();
 				}
 			}
-			String d=new String(ba,StandardCharsets.UTF_8);
+			String d=new String(ba,0,len,StandardCharsets.UTF_8);
 			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"\n"+d);
 		}
 		org=tag.getTag("サーバーアイコン取得","サーバアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
-			icon(bc,bc.server.getIconUrl(),bc.server.getId()+"_server_icon");
+			if(bc.server!=null)icon(bc,bc.server.getIconUrl(),bc.server.getId()+"_server_icon");
 		}
 		org=tag.getTag("サーバーアイコンURL","サーバーアイコンurl",
 				"サーバアイコンURL","サーバアイコンurl");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
-			DiscordBOT.DefaultHost.send(bc,bc.server.getIconUrl());
+			if(bc.server!=null)DiscordBOT.DefaultHost.send(bc,bc.server.getIconUrl());
 		}
 		org=tag.getTag("ユーザーアイコン取得","ユーザアイコン取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			if(org.isEmpty())org=bc.userid;
-			String url=bc.server.getMemberById(org).getUser().getEffectiveAvatarUrl();
+			String url=bc.getUser().getEffectiveAvatarUrl();
 			icon(bc,url,org+"_user_icon");
 		}
 		org=tag.getTag("ユーザーアイコンURL","ユーザーアイコンurl",
@@ -166,38 +168,44 @@ public class Sample implements IModule{
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			if(org.isEmpty())org=bc.userid;
-			String url=bc.server.getMemberById(org).getUser().getEffectiveAvatarUrl();
+			String url=bc.getUser().getEffectiveAvatarUrl();
 			DiscordBOT.DefaultHost.send(bc,url);
 		}
 		org=tag.getTag("メッセージ削除");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection&&tag.isAdmin()) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
-			DiscordBOT.DefaultHost.getTextChannel(bc.textChannel.getId()).deleteMessageById(org).queue();
+			DiscordBOT.DefaultHost.getTextChannel(bc.channel.getId()).deleteMessageById(org).queue();
 		}
 		org=tag.getTag("役職ID");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
-			List<Role> l;
-			if(!org.isEmpty()) {
-				if(org.equals("everyone"))org="@everyone";
-				l=bc.server.getRolesByName(org,false);
+			if(bc.server!=null) {
+				List<Role> l;
+				if(!org.isEmpty()) {
+					if(org.equals("everyone"))org="@everyone";
+					l=bc.server.getRolesByName(org,false);
+				}
+				else l=bc.server.getRoles();
+				StringBuilder sb=new StringBuilder("/");
+				//if(tag.con.mute)sb.append("/");
+				for(Role r:l) {
+					sb.append(r.getName().replaceAll("@","")).append(" のID ").append(r.getId()).append("\n");
+				}
+				if(sb.length()>1)tag.chatDefaultHost(sb.toString());
 			}
-			else l=bc.server.getRoles();
-			StringBuilder sb=new StringBuilder("/");
-			//if(tag.con.mute)sb.append("/");
-			for(Role r:l) {
-				sb.append(r.getName().replaceAll("@","")).append(" のID ").append(r.getId()).append("\n");
-			}
-			if(sb.length()>1)tag.chatDefaultHost(sb.toString());
 		}
 		org=tag.getTag("各種ID取得");
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			StringBuilder sb=new StringBuilder("/");
-			sb.append("サーバID=").append(bc.server.getId()).append("\n");
+			if(bc.server!=null)sb.append("サーバID=").append(bc.server.getId()).append("\n");
 			sb.append("チャンネルID=").append(bc.channel.getId()).append("\n");
 			sb.append("ユーザID=").append(bc.userid).append("\n");
 			tag.chatDefaultHost(sb.toString());
+		}
+		org=tag.getTag("ランダムID生成");
+		if(org!=null) {
+			tag.chatDefaultHost(UUID.randomUUID().toString());
 		}
 	}
 	private void icon(BouyomiBOTConection bc,String url,String name) {
@@ -208,7 +216,7 @@ public class Sample implements IModule{
 		if(index>0&&index<url.length())name+=url.substring(index);
 		ByteArrayInputStream bais=new ByteArrayInputStream(os.toByteArray());
 		NamedFileObject no=new NamedFileObject(bais,name);
-		DiscordBOT.DefaultHost.send(" ",bc.server,bc.textChannel,no);
+		DiscordBOT.DefaultHost.send(" ",bc.channel,no);
 	}
 	@Override
 	public void event(BouyomiEvent o) {

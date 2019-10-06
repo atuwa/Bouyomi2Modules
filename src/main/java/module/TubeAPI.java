@@ -3,13 +3,16 @@ package module;
 import static bouyomi.BouyomiProxy.*;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -107,7 +110,7 @@ public class TubeAPI implements IModule,IAutoSave{
 			else lastPlayUserId=null;
 			if(bc instanceof BouyomiBOTConection) {
 				BouyomiBOTConection bbc=(BouyomiBOTConection)bc;
-				lastPlayGuildId=bbc.server.getId();
+				lastPlayGuildId=bbc.server==null?"0":bbc.server.getId();
 				lastPlayChannelId=bbc.event.getTextChannel().getId();
 			}
 			if(playHistory.size()>=maxHistory){
@@ -171,11 +174,14 @@ public class TubeAPI implements IModule,IAutoSave{
 			if(s!=null&&!s.isEmpty()&&!s.equals(lastPlay)) {
 				BouyomiProxy.module.event(new PlayVideoTitleEvent(s));
 				StringBuilder sb=new StringBuilder();
-				sb.append("V=").append(lastPlay).append("\t");
-				sb.append("N=").append(lastPlayUser.replaceAll("\t"," ")).append("\t");
+				sb.append("L=").append(Long.toString(System.currentTimeMillis())).append("\t");
 				sb.append("U=").append(lastPlayUserId).append("\t");
 				sb.append("G=").append(lastPlayGuildId).append("\t");
 				sb.append("C=").append(lastPlayChannelId).append("\t");
+				String d=new SimpleDateFormat("yyyy/MM/dd HH時mm分ss秒").format(new Date());
+				sb.append("F=").append(d).append("\t");
+				sb.append("V=").append(lastPlay).append("\t");
+				sb.append("N=").append(lastPlayUser.replaceAll("\t"," ")).append("\t");
 				sb.append("T=").append(s.replaceAll("\t"," "));
 				saveLog(sb);
 				System.out.println("動画タイトル："+s);
@@ -184,15 +190,10 @@ public class TubeAPI implements IModule,IAutoSave{
 			}
 		}
 	}
-	private static void saveLog(StringBuilder s) {
+	private static void saveLog(StringBuilder sb) {
 		try{
 			FileOutputStream fos=new FileOutputStream("play_title.txt",true);//追加モードでファイルを開く
 			try{
-				String d=new SimpleDateFormat("yyyy/MM/dd HH時mm分ss秒").format(new Date());
-				StringBuilder sb=new StringBuilder();
-				sb.append("L=").append(Long.toString(System.currentTimeMillis()));
-				sb.append("\tF=").append(d).append("\t");
-				sb.append(s);
 				sb.append("\n");
 				fos.write(sb.toString().getBytes(StandardCharsets.UTF_8));//改行文字を追加してバイナリ化
 			}finally {
@@ -338,6 +339,14 @@ public class TubeAPI implements IModule,IAutoSave{
 			return playTube(bc, url);
 		}else if(url.indexOf("sc=")==0) {
 			return playTube(bc, url);
+		}else if(url.indexOf("https://soundcloud.com")==0){
+			String id=soundcloud(url);
+			if(id!=null)try{
+				Integer.parseInt(id);
+				return playTube(bc, "sc="+id);
+			}catch(NumberFormatException nfe) {}
+			bc.addTask.add("動画アイディーを抽出できませんでした");
+			System.err.println("URL解析失敗="+url);
 		}else{
 			if(playNico(bc, url, "sm","so","nm"))return true;
 			Matcher scm = Pattern.compile("//api.soundcloud.com/tracks/[0-9]++").matcher(url);
@@ -671,6 +680,41 @@ public class TubeAPI implements IModule,IAutoSave{
 			}catch(Exception e) {
 				TAG.con.addTask.add("パラメータが間違ってます");
 			}
+		}
+	}
+	public static String soundcloud(String org) {
+		try {
+			String UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36";
+			URL url=new URL(org);
+			HttpURLConnection uc=(HttpURLConnection)url.openConnection();
+			uc.setInstanceFollowRedirects(false);
+			uc.setRequestProperty("User-Agent",UA);
+			InputStream is=uc.getInputStream();//POSTした結果を取得
+			if(uc.getResponseCode()!=200)return null;
+			//System.out.println("200");
+			ByteArrayOutputStream bos=new ByteArrayOutputStream();
+			byte[] b=new byte[1024];
+			while(true) {
+				int len=is.read(b);
+				if(len<1)break;
+				bos.write(b,0,len);
+			}
+			String site=bos.toString("utf-8");
+			//System.out.println(site);
+			String ss="<a href=\"https://api.soundcloud.com/tracks/";
+			int index=site.indexOf(ss);
+			String ss1=site.substring(index+ss.length());
+			//System.out.println(ss1);
+			StringBuilder sb=new StringBuilder();
+			for(int i=0;i<ss1.length();i++) {
+				char ch=ss1.charAt(i);
+				if(ch=='/')break;
+				sb.append(ch);
+			}
+			return sb.toString();
+		}catch(Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 	@Override

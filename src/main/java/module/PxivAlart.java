@@ -15,6 +15,7 @@ import bouyomi.BouyomiProxy;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
+import bouyomi.Tag.TagCommand;
 
 public class PxivAlart implements IModule,IAutoSave{
 	private static final String pxivURL="https://sketch.pixiv.net/";
@@ -37,14 +38,15 @@ public class PxivAlart implements IModule,IAutoSave{
 	}
 	@Override
 	public void call(Tag tag){
-		String s=tag.getTag("配信");
+		TagCommand s=tag.getTagCommand("配信");
 		//if(tag.con.text.contains(pxivURL)&&tag.con.text.contains("配信開始")) {
-		if(s!=null&&s.contains(pxivURL)) {
+		if(s!=null&&s.value.contains(pxivURL)) {
+			s.removeTag();
 			//Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
 			//if(m.find())
 			{
 				//String urlS=m.group();
-				String urlS=s;
+				String urlS=s.toString();
 				if(!map.contains(urlS))try{
 					URL url=new URL(urlS);
 					HttpURLConnection uc=(HttpURLConnection)url.openConnection();

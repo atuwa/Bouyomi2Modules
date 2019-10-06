@@ -50,7 +50,7 @@ public class BouyomiKeeper implements IModule,IAutoSave{
 			}
 		}
 		if(tag.con.mute)return;
-		String k=tag.getTextChannel().getId();
+		String k=tag.getChannel().getId();
 		if(mix.containsKey(k)){
 			map.put(mix.get(k),Long.toString(System.currentTimeMillis()+keep));
 			call();

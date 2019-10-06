@@ -94,7 +94,7 @@ public class Kaikoga implements IModule,IAutoSave{
 		if(str!=null){
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
-				tag.chatDefaultHost("了解。"+tag.getUserName(str)+"の要求としてボロンさせます");
+				tag.chatDefaultHost("了解。"+tag.getUserNick(str)+"の要求としてボロンさせます");
 				hit(con,str);
 			}else con.addTask.add("権限がありません");
 		}
@@ -103,8 +103,8 @@ public class Kaikoga implements IModule,IAutoSave{
 			if(tag.isAdmin()){
 				if(str.isEmpty()) str=con.userid;
 				String old=kaikogaDB.remove(str);
-				if(old!=null) tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを抹消します");
-				else tag.chatDefaultHost(tag.getUserName(str)+"のボロンを抹消出来ませんでした");
+				if(old!=null) tag.chatDefaultHost("了解。"+tag.getUserNick(str)+"のボロンを抹消します");
+				else tag.chatDefaultHost(tag.getUserNick(str)+"のボロンを抹消出来ませんでした");
 			}else con.addTask.add("権限がありません");
 		}
 		str=tag.getTag("ボロン減算");
@@ -122,10 +122,10 @@ public class Kaikoga implements IModule,IAutoSave{
 				}
 				if("0".equals(n)){
 					kaikogaDB.remove(str);
-					tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを抹消します");
+					tag.chatDefaultHost("了解。"+tag.getUserNick(str)+"のボロンを抹消します");
 				}else{
 					kaikogaDB.put(str,n);
-					tag.chatDefaultHost("了解。"+tag.getUserName(str)+"のボロンを"+n+"にさせます");
+					tag.chatDefaultHost("了解。"+tag.getUserNick(str)+"のボロンを"+n+"にさせます");
 				}
 			}else con.addTask.add("権限がありません");
 		}
@@ -298,7 +298,7 @@ public class Kaikoga implements IModule,IAutoSave{
 			return sb.toString();
 		}
 		private void appendUser(String id,String value) {
-			String name=tag.getUserName(id);
+			String name=tag.getUserNick(id);
 			sb.append(name).append(" が").append(value).append("回");
 			try{
 				double i=Integer.parseInt(value);

@@ -31,7 +31,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 	private HashMap<String,String> 今日引いた人達=new HashMap<String,String>();
 	private static double 初期確率=20;
 	private static int ノルマ=4000;
-	private double 確率;
+	public double 確率;
 	private ArrayList<String> 今日歩いた距離=new ArrayList<String>();
 	private boolean 今日歩いた距離保存済;
 	private int 一日に引ける回数=1;//回数制限
@@ -121,6 +121,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 					今日歩いた距離.add(String.valueOf((int)指定値));
 					long 元の距離=合計距離;
 					合計距離=(long) (合計距離-指定値);
+					BouyomiProxy.module.event(new 距離変更イベント(元の距離,合計距離));
 					StringBuilder システムメッセージ=new StringBuilder("いちご丸が");
 					システムメッセージ.append(元の距離-合計距離).append("m歩いて残り");
 					システムメッセージ.append(合計距離).append("m");
@@ -228,7 +229,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				}catch(NumberFormatException e) {
 					continue;
 				}
-				sb.append(tag.getUserName(s.getKey())).append(" さんが ").append(s.getValue()).append("回");
+				sb.append(tag.getUserNick(s.getKey())).append(" さんが ").append(s.getValue()).append("回");
 				try{
 					if(気のせい引いた人.contains(Long.parseLong(s.getKey())))sb.append("(気のせい済)");
 				}catch(NumberFormatException e) {}
@@ -247,9 +248,23 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 					try{
 						気のせい引いた人.remove(Long.parseLong(パラメータ));
 					}catch(NumberFormatException e) {}
-					tag.chatDefaultHost(tag.con.mute?"/":""+tag.getUserName(パラメータ)+"を引いた人リストから消去しました");
+					tag.chatDefaultHost(tag.con.mute?"/":""+tag.getUserNick(パラメータ)+"を引いた人リストから消去しました");
 				}
 			}
+		}
+	}
+	public static class 距離変更イベント implements BouyomiEvent{
+		public long old,now;
+		public final 抽選 t;
+		private 距離変更イベント(long o,long n) {
+			old=o;
+			now=n;
+			t=null;
+		}
+		public 距離変更イベント(long o,long n,抽選 抽選){
+			old=o;
+			now=n;
+			t=抽選;
 		}
 	}
 	private void 運動ログ(String ログテキスト) {
@@ -290,10 +305,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			}
 			気のせい引いた人.add(Long.parseLong(tag.con.userid));
 			int ランダム値=ランダム生成源.nextInt(100);
-			if(ランダム値>=10) {
-				tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"お前もう引いただろ(確率10%)");
+			if(ランダム値>=15) {
+				tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"お前もう引いただろ(確率15%)");
 			}else if(今日引いた人達.remove(tag.con.userid)!=null) {
-				tag.chatDefaultHost("そうか気のせいか。/*"+tag.con.user+"は引けるようにしてやるよ。(確率10%)");
+				tag.chatDefaultHost("そうか気のせいか。/*"+tag.con.user+"は引けるようにしてやるよ。(確率15%)");
 			}
 		}
 	}
@@ -302,6 +317,7 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		public Tag tag;
 		public double ランダム値;
 		public long 古い合計距離;
+		public String printMessage;
 		public 抽選(いちご丸 i,Tag tag){
 			親=i;
 			this.tag=tag;
@@ -314,10 +330,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 		}
 		public void いちご丸が呼び出し() {
 			ランダム値=親.ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
-			if(ランダム値<0.5)まさかこれを引くとは("0.5%");
-			else if(ランダム値<5.5)むしゃむしゃ("5%");
-			else if(ランダム値<親.確率+5.5)行く(親.確率+"%");
-			else やだ((100-(親.確率+5.5))+"%");
+			if(ランダム値<0.2)まさかこれを引くとは("0.2%");
+			else if(ランダム値<5.2)むしゃむしゃ("5%");
+			else if(ランダム値<親.確率+5.2)行く(親.確率+"%");
+			else やだ((100-(親.確率+5.2))+"%");
 		}
 		public void 呼び出し() {
 			ランダム値=親.ランダム生成源.nextDouble()*100;//0～1000のランダムを生成
@@ -337,9 +353,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			sb.append("(").append(ランダム値).append(")");
 			if(親.リミッター())sb.append("42.195km上限");
 			定型文(sb,確率メッセージ);
-			String s=sb.toString();
-			System.out.println(s);
-			tag.chatDefaultHost(s);
+			printMessage=sb.toString();
+			System.out.println(printMessage);
+			BouyomiProxy.module.event(new 距離変更イベント(古い合計距離,親.合計距離,this));
+			tag.chatDefaultHost(printMessage);
 		}
 		private void むしゃむしゃ(String 確率メッセージ){
 			//単位はメートルで
@@ -351,13 +368,14 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			//sb.append("(").append(ランダム値).append(")");
 			if(親.リミッター())sb.append("-2km下限");
 			定型文(sb,確率メッセージ);
-			String s=sb.toString();
-			System.out.println(s);
-			tag.chatDefaultHost(s);
+			printMessage=sb.toString();
+			System.out.println(printMessage);
+			BouyomiProxy.module.event(new 距離変更イベント(古い合計距離,親.合計距離,this));
+			tag.chatDefaultHost(printMessage);
 		}
 		private void 行く(String 確率メッセージ){
 			//単位はメートルで
-			int 距離=親.ランダム生成源.nextInt(550)+250;
+			int 距離=親.ランダム生成源.nextInt(650)+350;
 			親.合計距離=親.合計距離+距離;
 			StringBuilder sb=new StringBuilder();
 			if(tag.con.mute)sb.append("/");
@@ -365,9 +383,10 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 			//sb.append("(").append(ランダム値).append(")");
 			if(親.リミッター())sb.append("42.195km上限");
 			定型文(sb,確率メッセージ);
-			String s=sb.toString();
-			System.out.println(s);
-			tag.chatDefaultHost(s);
+			printMessage=sb.toString();
+			System.out.println(printMessage);
+			BouyomiProxy.module.event(new 距離変更イベント(古い合計距離,親.合計距離,this));
+			tag.chatDefaultHost(printMessage);
 		}
 		private void やだ(String 確率メッセージ){
 			StringBuilder sb=new StringBuilder();

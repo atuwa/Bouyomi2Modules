@@ -104,7 +104,7 @@ public class Dosukebe implements IModule,IDailyUpdate,IAutoSave{
 	@Override
 	public void call(Tag tag){
 		if(tag.getGuild()==null||!tag.getGuild().getId().equals(gid))return;
-		if(tag.getTextChannel()==null||!tag.getTextChannel().getId().equals(cid))return;
+		if(tag.getChannel()==null||!tag.getChannel().getId().equals(cid))return;
 		if(tag.con.text.equals("ミュージックスタート")){
 			if(tag.con.userid==null)tag.con.addTask.add("ユーザID取得エラー");
 			if(used.contains(tag.con.userid)) {

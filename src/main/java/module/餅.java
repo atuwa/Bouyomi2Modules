@@ -12,7 +12,8 @@ import net.dv8tion.jda.api.entities.Member;
 
 public class 餅 implements IDailyUpdate,IModule{
 
-	private String[] 候補= {"餅","汚","焼","臭","腐","喰","妖","便","醜","悪","性","危"};
+	private String[] 候補= {"餅","汚","焼","臭","腐","喰","妖","便","醜","悪","性","危","邪","怖","魔",
+			"煮","勃","孕","産","糞","肝","膣","朕","💩","腋","絶頂","黄金水","王","草","i"};
 	private String 餅ID="306490014009917442";
 	private String 対象サーバID="566942640986390528";
 	private String 対象チャンネルID="566943792033169418";
@@ -23,7 +24,7 @@ public class 餅 implements IDailyUpdate,IModule{
 	@Override
 	public void call(Tag tag){
 		if(tag.getGuild()!=null&&!対象サーバID.equals(tag.getGuild().getId()))return;
-		今の名前=tag.getUserName(餅ID);
+		今の名前=DiscordBOT.DefaultHost.getNick(対象サーバID,餅ID);
 		String s=tag.getTag("餅君名前更新");
 		//if(s!=null&&(tag.isAdmin()||餅ID.equals(tag.con.userid))) {
 		if(s!=null) {

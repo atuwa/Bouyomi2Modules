@@ -222,7 +222,7 @@ public class NicoAlart implements IModule,IAutoSave, Runnable{
 			try{
 				check(1003067);
 				autoSave();
-			}catch(IOException e1){
+			}catch(Exception e1){
 				e1.printStackTrace();
 			}
 			System.gc();
