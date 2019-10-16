@@ -9,7 +9,7 @@ public class Calculator implements IModule{
 
 	@Override
 	public void call(Tag tag){
-		if(tag.con.text.indexOf('=')!=0)return;
+		if(tag.con.mute||tag.con.text.indexOf('=')!=0)return;
 		char[] ca=tag.con.text.toCharArray();
 		StringBuilder rpn=new StringBuilder();
 		boolean b=false;
@@ -81,7 +81,8 @@ public class Calculator implements IModule{
 		}
 		//tag.chatDefaultHost(rpn.toString()+"\n"+stack.get(0));
 		if(!stack.isEmpty()&&stack.get(0)!=null&&!stack.get(0).isEmpty()) {
-			tag.chatDefaultHost("/"+stack.get(0));
+			tag.chatDefaultHost("/"+stack.get(0)+"です");
+			tag.con.text="";
 		}
 	}
 	private void calc(ArrayList<String> stack,int i){

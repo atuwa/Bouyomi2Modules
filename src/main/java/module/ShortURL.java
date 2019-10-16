@@ -29,6 +29,7 @@ public class ShortURL implements IModule{
 			//System.out.println(m.group());
 			if(m.group().length()>200&&!tag.con.text.contains("短縮")) {
 				int i=m.group().length()-1;
+				System.out.println("短縮前URL文字数"+(i+1));
 				if(m.group().charAt(i)!=')'&&m.group().charAt(i)!='）')m.appendReplacement(sb, "URL短縮("+m.group()+")");
 			}
 		}

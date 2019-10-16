@@ -18,10 +18,13 @@ import java.util.regex.Pattern;
 import bouyomi.BouyomiProxy;
 import bouyomi.DailyUpdate;
 import bouyomi.DailyUpdate.IDailyUpdate;
+import bouyomi.DiscordBOT;
+import bouyomi.DiscordBOT.BouyomiBOTConection;
 import bouyomi.IAutoSave;
 import bouyomi.IModule;
 import bouyomi.Tag;
 import bouyomi.Util;
+import net.dv8tion.jda.api.entities.Guild;
 
 public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 
@@ -304,12 +307,29 @@ public class いちご丸 implements IModule,IAutoSave,IDailyUpdate{
 				return;
 			}
 			気のせい引いた人.add(Long.parseLong(tag.con.userid));
-			int ランダム値=ランダム生成源.nextInt(100);
-			if(ランダム値>=15) {
-				tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"お前もう引いただろ(確率15%)");
-			}else if(今日引いた人達.remove(tag.con.userid)!=null) {
-				tag.chatDefaultHost("そうか気のせいか。/*"+tag.con.user+"は引けるようにしてやるよ。(確率15%)");
-			}
+			new Thread() {
+				@Override
+				public void run() {
+					try{
+						if(tag.con instanceof BouyomiBOTConection) {
+							BouyomiBOTConection bot=(BouyomiBOTConection)tag.con;
+							if(DiscordBOT.DefaultHost!=null) {
+								Guild guild=DiscordBOT.DefaultHost.jda.getGuildById(bot.server.getId());
+								guild.getTextChannelById(bot.channel.getId()).sendTyping().queue();
+							}
+						}
+						Thread.sleep(2000);
+					}catch(InterruptedException e){
+						e.printStackTrace();
+					}
+					int ランダム値=ランダム生成源.nextInt(100);
+					if(ランダム値>=15) {
+						tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"お前もう引いただろ(確率15%)");
+					}else if(今日引いた人達.remove(tag.con.userid)!=null) {
+						tag.chatDefaultHost("そうか気のせいか。/*"+tag.con.user+"は引けるようにしてやるよ。(確率15%)");
+					}
+				}
+			}.start();
 		}
 	}
 	public static class 抽選 implements BouyomiEvent{

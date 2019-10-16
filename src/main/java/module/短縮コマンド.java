@@ -27,6 +27,7 @@ public class 短縮コマンド implements IModule{
 			t.con.text="気のせいでしょ";
 		}
 		else if(t.con.text.equals("$gk"))t.con.text="グレートカイコガ";
+		else if(t.con.text.equals("$mk"))t.con.text="燃えろカイコガ";
 		else if(t.con.text.equals("$?"))t.con.text="!help";
 		else if(t.con.text.equals("$zh")) {
 			SimpleDateFormat sdf=new SimpleDateFormat("aahh時mm分ss秒をお知らせします");

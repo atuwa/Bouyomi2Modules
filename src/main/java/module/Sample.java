@@ -160,7 +160,7 @@ public class Sample implements IModule{
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			if(org.isEmpty())org=bc.userid;
-			String url=bc.getUser().getEffectiveAvatarUrl();
+			String url=bc.event.getJDA().getUserById(org).getEffectiveAvatarUrl();
 			icon(bc,url,org+"_user_icon");
 		}
 		org=tag.getTag("ユーザーアイコンURL","ユーザーアイコンurl",
@@ -168,7 +168,7 @@ public class Sample implements IModule{
 		if(org!=null&&tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection) tag.con;
 			if(org.isEmpty())org=bc.userid;
-			String url=bc.getUser().getEffectiveAvatarUrl();
+			String url=bc.event.getJDA().getUserById(org).getEffectiveAvatarUrl();
 			DiscordBOT.DefaultHost.send(bc,url);
 		}
 		org=tag.getTag("メッセージ削除");
