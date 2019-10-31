@@ -67,7 +67,7 @@ public class Sample implements IModule{
 			tag.chatDefaultHost(sb.toString());
 		}
 		String org=tag.getTag("文字化け");
-		if(org!=null) {
+		if(org!=null&&!org.isEmpty()) {
 			try{
 				byte[] b=org.getBytes(StandardCharsets.UTF_8);
 				StringBuilder sb=new StringBuilder("/Shift-JIS\n```");
