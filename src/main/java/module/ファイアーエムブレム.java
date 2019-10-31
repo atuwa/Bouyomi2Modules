@@ -19,9 +19,11 @@ public class ファイアーエムブレム implements IModule{
 		if(tag.con.text.contains("ファイアーカイコガエムブレム")) {
 			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"ファイアーエムブレムだ二度と...なんだそれ？");
 		}
+		if(tag.con.text.contains("エーデルガルド")) {
+			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"エーデルガルトだ光柱撃つぞ");
+		}
 		if(tag.con.text.contains("ファイファン")) {
 			tag.chatDefaultHost(Util.IDtoMention(tag.con.userid)+"ファイナルファンタジーだ訂正しろ");
 		}
 	}
-
 }
