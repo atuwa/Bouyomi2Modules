@@ -18,23 +18,29 @@ import bouyomi.Tag;
 import bouyomi.Tag.TagCommand;
 import bouyomi.Util;
 import bouyomi.Util.JsonUtil;
+import net.dv8tion.jda.api.Permission;
 
 public class ShortURL implements IModule{
 
 	@Override
 	public void call(Tag tag){
-		Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
-		StringBuffer sb=new StringBuffer();
-		while(m.find()){
-			//System.out.println(m.group());
-			if(m.group().length()>200&&!tag.con.text.contains("短縮")) {
-				int i=m.group().length()-1;
-				System.out.println("短縮前URL文字数"+(i+1));
-				if(m.group().charAt(i)!=')'&&m.group().charAt(i)!='）')m.appendReplacement(sb, "URL短縮("+m.group()+")");
+		if(tag.con instanceof BouyomiBOTConection) {
+			BouyomiBOTConection bc=(BouyomiBOTConection)tag.con;
+			if(bc.server!=null&&bc.server.getMember(bc.server.getJDA().getSelfUser()).getPermissions().contains(Permission.MESSAGE_MANAGE)) {
+				Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
+				StringBuffer sb=new StringBuffer();
+				while(m.find()){
+					//System.out.println(m.group());
+					if(m.group().length()>200&&!tag.con.text.contains("短縮")) {
+						int i=m.group().length()-1;
+						System.out.println("短縮前URL文字数"+(i+1));
+						if(m.group().charAt(i)!=')'&&m.group().charAt(i)!='）')m.appendReplacement(sb, "URL短縮("+m.group()+")");
+					}
+				}
+				m.appendTail(sb);
+				tag.con.text=sb.toString();
 			}
 		}
-		m.appendTail(sb);
-		tag.con.text=sb.toString();
 		TagCommand url0=tag.getTagCommand("URL短縮","ＵＲＬ短縮","url短縮");
 		int mode=0;
 		if(url0==null) {
