@@ -26,7 +26,7 @@ public class ShortURL implements IModule{
 	public void call(Tag tag){
 		if(tag.con instanceof BouyomiBOTConection) {
 			BouyomiBOTConection bc=(BouyomiBOTConection)tag.con;
-			if(bc.server!=null&&bc.server.getMember(bc.server.getJDA().getSelfUser()).getPermissions().contains(Permission.MESSAGE_MANAGE)) {
+			if(bc.server!=null&&!bc.server.getMember(bc.server.getJDA().getSelfUser()).getPermissions().contains(Permission.MESSAGE_MANAGE)) {
 				Matcher m=Pattern.compile("https?://\\S++").matcher(tag.con.text);
 				StringBuffer sb=new StringBuffer();
 				while(m.find()){
